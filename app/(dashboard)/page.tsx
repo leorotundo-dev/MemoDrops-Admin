@@ -72,6 +72,57 @@ export default async function DashboardHome() {
           </div>
         </div>
       </div>
+
+      {/* Detalhamento de Custos */}
+      <div className="card p-6">
+        <h2 className="text-lg font-semibold mb-4">Detalhamento de Custos (Últimos 30 dias)</h2>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Custos por Categoria */}
+          <div>
+            <h3 className="text-sm font-semibold text-slate-600 mb-3">Por Categoria</h3>
+            <div className="space-y-2">
+              {stats.finance.costs_by_category && Object.keys(stats.finance.costs_by_category).length > 0 ? (
+                Object.entries(stats.finance.costs_by_category).map(([category, total]) => (
+                  <div key={category} className="flex justify-between items-center p-2 bg-slate-50 rounded">
+                    <span className="text-sm capitalize">{category}</span>
+                    <span className="font-semibold">R$ {(total as number).toFixed(2)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-slate-500">Nenhum custo registrado</div>
+              )}
+            </div>
+          </div>
+
+          {/* Custos por Serviço */}
+          <div>
+            <h3 className="text-sm font-semibold text-slate-600 mb-3">Por Serviço</h3>
+            <div className="space-y-2">
+              {stats.finance.costs_by_service && stats.finance.costs_by_service.length > 0 ? (
+                stats.finance.costs_by_service.map((item: any, idx: number) => (
+                  <div key={idx} className="flex justify-between items-center p-2 bg-slate-50 rounded">
+                    <div>
+                      <div className="text-sm font-medium">{item.service}</div>
+                      <div className="text-xs text-slate-500 capitalize">{item.category}</div>
+                    </div>
+                    <span className="font-semibold">R$ {item.total.toFixed(2)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-slate-500">Nenhum custo registrado</div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
+          <p className="text-sm text-blue-800">
+            <strong>Nota:</strong> Os custos são rastreados automaticamente a partir da tabela <code className="bg-blue-100 px-1 rounded">api_costs</code> no banco de dados. 
+            Para adicionar novos custos, insira registros nessa tabela com os campos: service, category, amount, period_start, period_end.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
