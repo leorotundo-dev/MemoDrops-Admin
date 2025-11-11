@@ -11,9 +11,9 @@ export default async function FinancePage(){
   const role = (session as any)?.user?.role || 'admin';
   if (role !== 'superadmin') redirect('/');
 
-  const mrr = await apiGet("/admin/finance/mrr", session?.accessToken as string | undefined).catch(()=>null);
-  const costs = await apiGet("/admin/finance/costs?limit=10", session?.accessToken as string | undefined).catch(()=>null);
-  const plans = await apiGet("/admin/finance/plans", session?.accessToken as string | undefined).catch(()=>({ data: [] }));
+  const mrr = await apiGet("/admin/finance/mrr", (session as any)?.accessToken as string | undefined).catch(()=>null);
+  const costs = await apiGet("/admin/finance/costs?limit=10", (session as any)?.accessToken as string | undefined).catch(()=>null);
+  const plans = await apiGet("/admin/finance/plans", (session as any)?.accessToken as string | undefined).catch(()=>({ data: [] }));
 
   const series = mrr?.series || [
     { month: "Jul", revenue: 12000, cost: 5000 },
