@@ -1,115 +1,113 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-
-type User = { 
-  id: string; 
-  email: string; 
-  name?: string; 
-  plan?: string; 
-  cash_balance?: number; 
-  created_at?: string; 
-};
+import UserTable from './components/users/UserTable';
+import UserFilters from './components/users/UserFilters';
+import UserModal from './components/users/UserModal';
+import UserStatsCard from './components/users/UserStatsCard';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { API_URL } from './components/api';
+import type { User } from './types';
 
 export default function UsersPage() {
   const { data: session } = useSession();
-  const token = (session as any)?.token as string | undefined;
-  const [items, setItems] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [q, setQ] = useState('');
+  const [status, setStatus] = useState<'all' | 'active' | 'banned'>('all');
+  const [plan, setPlan] = useState<'all' | 'free' | 'pro' | 'team'>('all');
+  const [selected, setSelected] = useState<User | null>(null);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app';
-        const url = `${apiUrl}/admin/users`;
-        
-        const res = await fetch(url, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-        
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        
-        const json = await res.json();
-        setItems(json.data || []);
-        setError(null);
-      } catch (e: any) {
-        console.error('Error fetching users:', e);
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (token) {
-      fetchUsers();
+  async function load() {
+    if (!session?.user?.token) {
+      setLoading(false);
+      return;
     }
-  }, [token]);
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Usuários</h1>
-        <p>Carregando...</p>
-      </div>
-    );
+    try {
+      setLoading(true);
+      const url = new URL(`${API_URL}/admin/users`);
+      if (q) url.searchParams.set('q', q);
+      if (status !== 'all') url.searchParams.set('status', status);
+      if (plan !== 'all') url.searchParams.set('plan', plan);
+      
+      const res = await fetch(url.toString(), {
+        headers: { 
+          'Authorization': `Bearer ${session.user.token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      });
+      
+      if (!res.ok) throw new Error('Erro ao carregar usuários');
+      const data = await res.json();
+      setUsers(data.items || data || []);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao carregar usuários');
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (error) {
+  useEffect(() => { 
+    if (session?.user?.token) {
+      load(); 
+    }
+  }, [session]);
+  
+  useEffect(() => { 
+    if (session?.user?.token) {
+      const t = setTimeout(load, 350); 
+      return () => clearTimeout(t);
+    }
+  }, [q, status, plan]);
+
+  if (!session) {
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Usuários</h1>
-        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded">
-          <p className="font-semibold">Erro ao carregar usuários:</p>
-          <p>{error}</p>
-        </div>
+        <div className="text-center text-gray-500">Carregando...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Usuários</h1>
-      
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plano</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Saldo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Criado em</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {items.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  Nenhum usuário encontrado
-                </td>
-              </tr>
-            ) : (
-              items.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm">{user.email}</td>
-                  <td className="px-6 py-4 text-sm">{user.name || '—'}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
-                      {user.plan || 'free'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm">R$ {(user.cash_balance || 0).toFixed(2)}</td>
-                  <td className="px-6 py-4 text-sm">{user.created_at?.slice(0, 10) || '—'}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+    <div className="p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-slate-800">Usuários</h1>
+        <button 
+          onClick={load} 
+          className="px-3 py-2 rounded-md bg-slate-800 text-white text-sm hover:bg-slate-700 transition-colors"
+        >
+          Atualizar
+        </button>
       </div>
+
+      <UserStatsCard users={users} loading={loading} />
+      <UserFilters 
+        q={q} 
+        onQ={setQ} 
+        status={status} 
+        onStatus={setStatus} 
+        plan={plan} 
+        onPlan={setPlan} 
+      />
+      <UserTable 
+        loading={loading} 
+        users={users} 
+        onSelect={setSelected} 
+      />
+
+      {selected && (
+        <UserModal 
+          user={selected} 
+          onClose={() => setSelected(null)} 
+          onChanged={load}
+          token={session.user.token}
+        />
+      )}
+      
+      <ToastContainer position="bottom-right" />
     </div>
   );
 }
