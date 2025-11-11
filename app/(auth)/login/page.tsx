@@ -1,14 +1,15 @@
 'use client';
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const callbackUrl = useSearchParams().get('callbackUrl') || "/";
+  
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setLoading(true); setError(null);
@@ -16,6 +17,7 @@ export default function LoginPage() {
     setLoading(false);
     if (res?.error) setError("Credenciais inválidas"); else window.location.href = callbackUrl;
   }
+  
   return (
     <div className="min-h-screen grid place-items-center">
       <div className="w-full max-w-sm card p-6">
@@ -28,5 +30,13 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen grid place-items-center">Carregando...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
