@@ -73,7 +73,7 @@ export default function SubjectsPage(){
         <button className="btn btn-primary" onClick={()=> setCreating(true)}>Nova matéria</button>
       </div>
       <input className="input max-w-sm" placeholder="Buscar matéria…" value={search} onChange={e=>setSearch(e.target.value)} />
-      <DataTable columns={columns} data={items} pageSize={10} />
+      <DataTable columns={columns} data={items} />
 
       <Modal open={creating} onClose={()=> setCreating(false)} title="Nova matéria">
         <SubjectForm onSubmit={onCreate} onCancel={()=> setCreating(false)} />

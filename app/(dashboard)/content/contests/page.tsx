@@ -76,7 +76,7 @@ export default function ContestsPage(){
         <button className="btn btn-primary" onClick={()=> setCreating(true)}>Novo concurso</button>
       </div>
       <input className="input max-w-sm" placeholder="Buscar por nome ou banca…" value={search} onChange={e=>setSearch(e.target.value)} />
-      <DataTable columns={columns} data={items} pageSize={10} />
+      <DataTable columns={columns} data={items} />
 
       <Modal open={creating} onClose={()=> setCreating(false)} title="Novo concurso">
         <ContestForm onSubmit={onCreate} onCancel={()=> setCreating(false)} />

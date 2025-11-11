@@ -81,7 +81,7 @@ export default function UsersPage(){
           <option value="team">Team</option>
         </select>
       </div>
-      <DataTable columns={columns} data={items} pageSize={10} />
+      <DataTable columns={columns} data={items} />
 
       <Modal open={addCashOpen} onClose={()=> setAddCashOpen(false)} title={`Adicionar cash para ${selected?.email || ''}`}>
         <div className="space-y-3">
