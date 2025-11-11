@@ -1,7 +1,17 @@
 export type AdminStats = {
   users: { total: number; new_last_30_days: number; active_dau: number; active_mau: number };
   content: { contests: number; subjects: number; public_decks: number; public_cards: number };
-  finance: { mrr: number; total_cost: number; gross_profit: number };
+  finance: { 
+    mrr: number; 
+    total_cost: number; 
+    gross_profit: number;
+    costs_by_category?: Record<string, number>;
+    costs_by_service?: Array<{
+      service: string;
+      category: string;
+      total: number;
+    }>;
+  };
   system: { api_status: string; db_status: string; active_jobs: number; failed_jobs: number };
 };
 export type UserRow = {
