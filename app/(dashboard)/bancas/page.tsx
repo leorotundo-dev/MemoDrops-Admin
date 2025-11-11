@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import type { Banca } from '../../../types/bancas';
 import { BancaModal } from '../../../components/bancas/BancaModal';
 import { BancaDetailsModal } from '../../../components/bancas/BancaDetailsModal';
@@ -8,6 +9,8 @@ import { ImportModal } from '../../../components/bancas/ImportModal';
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 export default function BancasPage(){
+  const { data: session } = useSession();
+  const token = (session as any)?.token;
   const [bancas, setBancas] = useState<Banca[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
@@ -29,19 +32,22 @@ export default function BancasPage(){
       if (filters.area !== 'all') params.set('area', filters.area);
       if (filters.search) params.set('search', filters.search);
       if (filters.sort) params.set('sort', filters.sort);
-      const res = await fetch(`${API}/admin/bancas?${params}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
+      if (!token) return;
+      const res = await fetch(`${API}/admin/bancas?${params}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setBancas(data);
     } finally { setLoading(false); }
   }
   async function fetchStats(){
-    const res = await fetch(`${API}/admin/bancas/stats`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
+    if (!token) return;
+    const res = await fetch(`${API}/admin/bancas/stats`, { headers: { Authorization: `Bearer ${token}` } });
     setStats(await res.json());
   }
 
   async function handleDelete(id: string){
     if (!confirm('Tem certeza que deseja deletar esta banca?')) return;
-    await fetch(`${API}/admin/bancas/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
+    if (!token) return;
+    await fetch(`${API}/admin/bancas/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     fetchBancas(); fetchStats();
   }
 
@@ -198,16 +204,16 @@ export default function BancasPage(){
 
       {/* Modais */}
       {showCreateModal && (
-        <BancaModal onClose={()=>setShowCreateModal(false)} onSave={()=>{ setShowCreateModal(false); fetchBancas(); fetchStats(); }} />
+        <BancaModal token={token} onClose={()=>setShowCreateModal(false)} onSave={()=>{ setShowCreateModal(false); fetchBancas(); fetchStats(); }} />
       )}
       {selectedBanca && (
-        <BancaModal banca={selectedBanca} onClose={()=>setSelectedBanca(null)} onSave={()=>{ setSelectedBanca(null); fetchBancas(); fetchStats(); }} />
+        <BancaModal token={token} banca={selectedBanca} onClose={()=>setSelectedBanca(null)} onSave={()=>{ setSelectedBanca(null); fetchBancas(); fetchStats(); }} />
       )}
       {showDetailsModal && (
-        <BancaDetailsModal bancaId={showDetailsModal} onClose={()=>setShowDetailsModal(null)} onEdit={(b)=>{ setShowDetailsModal(null); setSelectedBanca(b as any); }} />
+        <BancaDetailsModal token={token} bancaId={showDetailsModal} onClose={()=>setShowDetailsModal(null)} onEdit={(b)=>{ setShowDetailsModal(null); setSelectedBanca(b as any); }} />
       )}
       {showImportModal && (
-        <ImportModal onClose={()=>setShowImportModal(false)} onImport={()=>{ setShowImportModal(false); fetchBancas(); fetchStats(); }} />
+        <ImportModal token={token} onClose={()=>setShowImportModal(false)} onImport={()=>{ setShowImportModal(false); fetchBancas(); fetchStats(); }} />
       )}
     </div>
   );

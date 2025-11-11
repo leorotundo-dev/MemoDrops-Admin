@@ -21,7 +21,7 @@ function parseCSV(text: string){
   return out;
 }
 
-export function ImportModal({ onClose, onImport }: { onClose: ()=>void; onImport: ()=>void; }){
+export function ImportModal({ token, onClose, onImport }: { token: string; onClose: ()=>void; onImport: ()=>void; }){
   const [fileName, setFileName] = useState('');
   const [parsed, setParsed] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,6 @@ export function ImportModal({ onClose, onImport }: { onClose: ()=>void; onImport
   async function runImport(){
     if (!parsed || parsed.length===0) return alert('Selecione um CSV válido.');
     setLoading(true);
-    const token = localStorage.getItem('token') || '';
     const res = await fetch(`${API}/admin/bancas/import`, {
       method:'POST', headers:{ 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ bancas: parsed })

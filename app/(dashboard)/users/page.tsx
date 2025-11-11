@@ -20,7 +20,7 @@ export default function UsersPage() {
   const [selected, setSelected] = useState<User | null>(null);
 
   async function load() {
-    if (!session?.user?.token) {
+    if (!(session as any)?.token) {
       setLoading(false);
       return;
     }
@@ -34,7 +34,7 @@ export default function UsersPage() {
       
       const res = await fetch(url.toString(), {
         headers: { 
-          'Authorization': `Bearer ${session.user.token}`,
+          'Authorization': `Bearer ${(session as any).token}`,
           'Content-Type': 'application/json'
         },
         cache: 'no-store'

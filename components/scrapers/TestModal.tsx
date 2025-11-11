@@ -3,21 +3,21 @@ import { useEffect, useState } from 'react';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-export function TestModal({ scraperId, onClose }: { scraperId: string; onClose: ()=>void; }){
+export function TestModal({ token, scraperId, onClose }: { token: string; scraperId: string; onClose: ()=>void; }){
   const [url, setUrl] = useState('');
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(()=>{
     // tenta buscar o test_url default
-    fetch(`${API}/admin/scrapers/${scraperId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }})
+    fetch(`${API}/admin/scrapers/${scraperId}`, { headers: { Authorization: `Bearer ${token}` }})
       .then(r=>r.json()).then((s)=> setUrl(s?.test_url || ''));
   },[scraperId]);
 
   async function run(){
     setLoading(true); setResult(null);
     const res = await fetch(`${API}/admin/scrapers/${scraperId}/test`, {
-      method:'POST', headers:{ 'Content-Type':'application/json', Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
+      method:'POST', headers:{ 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ url })
     });
     const data = await res.json();

@@ -6,7 +6,8 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 
 const AREA_OPTIONS = ['federal','estadual','municipal'] as const;
 
-export function BancaModal({ banca, onClose, onSave }: {
+export function BancaModal({ token, banca, onClose, onSave }: {
+  token: string;
   banca?: Banca | null;
   onClose: ()=>void;
   onSave: ()=>void;
@@ -37,7 +38,7 @@ export function BancaModal({ banca, onClose, onSave }: {
   useEffect(()=>{
     (async ()=>{
       try {
-        const res = await fetch(`${API}/admin/scrapers`, { headers:{ Authorization: `Bearer ${localStorage.getItem('token')||''}` }});
+        const res = await fetch(`${API}/admin/scrapers`, { headers:{ Authorization: `Bearer ${token||''}` }});
         const data = await res.json();
         setScrapers((data||[]).map((s:any)=>({ id:s.id, display_name:s.display_name })));
       } catch {}
@@ -65,7 +66,6 @@ export function BancaModal({ banca, onClose, onSave }: {
   async function save(){
     const err = validate();
     if (err) return alert(err);
-    const token = localStorage.getItem('token') || '';
     const payload: any = {
       name: form.name.trim(),
       display_name: form.display_name.trim(),

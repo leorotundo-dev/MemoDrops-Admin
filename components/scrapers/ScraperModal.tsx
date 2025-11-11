@@ -5,7 +5,7 @@ import type { Scraper } from '@/types/scrapers';
 const API = process.env.NEXT_PUBLIC_API_URL;
 const CATEGORIES = ['banca','federal','estadual','justica','municipal','outros'] as const;
 
-export function ScraperModal({ scraper, onClose, onSaved }: { scraper?: Scraper|null; onClose: ()=>void; onSaved: ()=>void; }){
+export function ScraperModal({ token, scraper, onClose }: { token: string; scraper?: Scraper|null; onClose: ()=>void; }){
   const [form, setForm] = useState<any>({
     name:'', display_name:'', category:'banca', hostname_pattern:'', adapter_file:'', is_active:true, priority:100, description:'', test_url:''
   });
@@ -35,17 +35,15 @@ export function ScraperModal({ scraper, onClose, onSaved }: { scraper?: Scraper|
   async function save(){
     const err = validate();
     if (err) { alert(err); return; }
-    const token = localStorage.getItem('token') || '';
     const payload: any = { ...form };
     const url = isEdit ? `${API}/admin/scrapers/${scraper!.id}` : `${API}/admin/scrapers`;
     const method = isEdit ? 'PUT' : 'POST';
     const res = await fetch(url, { method, headers:{ 'Content-Type':'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
     if (!res.ok) { alert('Falha ao salvar'); return; }
-    onSaved();
+    onClose();
   }
 
   async function testNow(){
-    const token = localStorage.getItem('token') || '';
     const url = isEdit ? `${API}/admin/scrapers/${scraper!.id}/test` : null;
     if (!url) { alert('Salve antes de testar'); return; }
     const testUrl = form.test_url || prompt('Informe a URL de teste:');

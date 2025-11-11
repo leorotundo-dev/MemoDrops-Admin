@@ -5,13 +5,12 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-export function BancaDetailsModal({ bancaId, onClose, onEdit }: { bancaId: string; onClose: ()=>void; onEdit: (b: Banca)=>void; }){
+export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: string; bancaId: string; onClose: ()=>void; onEdit: (b: Banca)=>void; }){
   const [banca, setBanca] = useState<Banca | null>(null);
   const [stats, setStats] = useState<BancaYearStat[]>([]);
   const [contests, setContests] = useState<any[]>([]);
 
   useEffect(()=>{
-    const token = localStorage.getItem('token') || '';
     (async ()=>{
       const [b, s, c] = await Promise.all([
         fetch(`${API}/admin/bancas/${bancaId}`, { headers:{ Authorization: `Bearer ${token}` }}).then(r=>r.json()),

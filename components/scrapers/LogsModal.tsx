@@ -4,14 +4,14 @@ import type { ScraperLog } from '@/types/scrapers';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-export function LogsModal({ scraperId, onClose }: { scraperId: string; onClose: ()=>void; }){
+export function LogsModal({ token, scraperId, onClose }: { token: string; scraperId: string; onClose: ()=>void; }){
   const [logs, setLogs] = useState<ScraperLog[]>([]);
   const [status, setStatus] = useState<'all'|'success'|'error'|'timeout'>('all');
 
   async function load(){
     const params = new URLSearchParams();
     if (status!=='all') params.set('status', status);
-    const res = await fetch(`${API}/admin/scrapers/${scraperId}/logs?${params}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
+    const res = await fetch(`${API}/admin/scrapers/${scraperId}/logs?${params}`, { headers: { Authorization: `Bearer ${token}` } });
     setLogs(await res.json());
   }
   useEffect(()=>{ load(); /* eslint-disable-next-line */ }, [scraperId, status]);
