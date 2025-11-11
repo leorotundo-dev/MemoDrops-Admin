@@ -67,8 +67,8 @@ export default async function DashboardHome() {
         <div className="card p-4">
           <div className="text-sm font-semibold mb-2">Ações rápidas</div>
           <div className="space-x-2">
-            <a className="btn btn-primary" href="/(dashboard)/content/contests">Gerenciar Concursos</a>
-            <a className="btn" href="/(dashboard)/users">Usuários</a>
+            <a className="btn btn-primary" href="/content/contests">Gerenciar Concursos</a>
+            <a className="btn" href="/users">Usuários</a>
           </div>
         </div>
       </div>

@@ -2,12 +2,12 @@ import Link from "next/link";
 import { NavItem } from "./types";
 
 const NAV: NavItem[] = [
-  { href: "/(dashboard)", label: "Visão Geral" },
-  { href: "/(dashboard)/users", label: "Usuários" },
-  { href: "/(dashboard)/content/contests", label: "Concursos" },
-  { href: "/(dashboard)/content/subjects", label: "Matérias" },
-  { href: "/(dashboard)/finance", label: "Financeiro" },
-  { href: "/(dashboard)/monitoring", label: "Monitoramento" },
+  { href: "/", label: "Visão Geral" },
+  { href: "/users", label: "Usuários" },
+  { href: "/content/contests", label: "Concursos" },
+  { href: "/content/subjects", label: "Matérias" },
+  { href: "/finance", label: "Financeiro" },
+  { href: "/monitoring", label: "Monitoramento" },
 ];
 
 export default function Sidebar() {
