@@ -1,111 +1,62 @@
-'use client';
-import { useState, useEffect } from 'react';
+import { sfetch } from "@/lib/sfetch";
+import { AdminStats } from "@/types";
 
 interface CostData {
   service: string;
   total_cost: number;
-  total_tokens: number;
-  total_requests: number;
+  category: string;
 }
 
-interface FinanceData {
-  message: string;
-  aggregated: CostData[];
-  total: number;
-}
-
-export default function FinanceiroPage() {
-  const [data, setData] = useState<FinanceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchFinanceData();
-  }, []);
-
-  async function fetchFinanceData() {
-    try {
-      setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/stats`);
-      if (!response.ok) throw new Error('Erro ao carregar dados');
-      
-      const stats = await response.json();
-      
-      // Transformar dados do /admin/stats para o formato esperado
-      const aggregated = stats.finance?.costs_by_service?.map((item: any) => ({
-        service: item.service,
-        total_cost: item.total || 0,
-        total_tokens: 0, // Não disponível no /admin/stats
-        total_requests: 0 // Não disponível no /admin/stats
-      })) || [];
-
-      setData({
-        message: 'Success',
-        aggregated,
-        total: stats.finance?.total_cost || 0
-      });
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
+export default async function FinanceiroPage() {
+  const stats = await sfetch("/admin/stats") as AdminStats | null;
+  
+  if (!stats || !stats.finance) {
     return (
       <div className="p-8">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          Erro ao carregar dados financeiros: {error}
+          Erro ao carregar dados financeiros. Verifique se o backend está rodando.
         </div>
       </div>
     );
   }
 
-  const total = data?.total?.toFixed(2) || '0.00';
-  const aggregated = data?.aggregated || [];
+  // Transformar dados do /admin/stats para o formato esperado
+  const aggregated: CostData[] = stats.finance?.costs_by_service?.map((item) => ({
+    service: item.service,
+    total_cost: item.total || 0,
+    category: item.category
+  })) || [];
+
+  const total = stats.finance.total_cost || 0;
+  const servicesCount = aggregated.length;
+  const avgPerService = servicesCount > 0 ? total / servicesCount : 0;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Painel Financeiro</h1>
-        <button 
-          onClick={fetchFinanceData}
-          className="btn"
-        >
-          🔄 Atualizar
-        </button>
       </div>
 
       {/* KPIs */}
       <div className="grid sm:grid-cols-3 gap-4">
-        <div className="kpi">
-          <div className="text-sm text-slate-600">Custo Total</div>
-          <div className="text-3xl font-bold text-green-600">R$ {total}</div>
+        <div className="card p-6">
+          <div className="text-sm text-slate-600 mb-1">Custo Total</div>
+          <div className="text-3xl font-bold text-green-600">R$ {total.toFixed(2)}</div>
         </div>
         
-        <div className="kpi">
-          <div className="text-sm text-slate-600">Serviços Ativos</div>
-          <div className="text-3xl font-bold">{aggregated.length}</div>
+        <div className="card p-6">
+          <div className="text-sm text-slate-600 mb-1">Serviços Ativos</div>
+          <div className="text-3xl font-bold">{servicesCount}</div>
         </div>
 
-        <div className="kpi">
-          <div className="text-sm text-slate-600">Média por Serviço</div>
-          <div className="text-3xl font-bold">
-            R$ {aggregated.length > 0 ? (data!.total / aggregated.length).toFixed(2) : '0.00'}
-          </div>
+        <div className="card p-6">
+          <div className="text-sm text-slate-600 mb-1">Média por Serviço</div>
+          <div className="text-3xl font-bold">R$ {avgPerService.toFixed(2)}</div>
         </div>
       </div>
 
-      {/* Tabela de Custos */}
+      {/* Tabela */}
       <div className="card">
         <div className="p-4 border-b">
           <h2 className="text-lg font-semibold">Custos por Serviço</h2>
@@ -114,8 +65,6 @@ export default function FinanceiroPage() {
         {aggregated.length === 0 ? (
           <div className="p-8 text-center text-slate-500">
             Nenhum dado de custo disponível ainda.
-            <br />
-            <span className="text-sm">Os custos serão rastreados automaticamente quando houver uso de APIs.</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -123,14 +72,15 @@ export default function FinanceiroPage() {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="text-left p-3">Serviço</th>
+                  <th className="text-left p-3">Categoria</th>
                   <th className="text-right p-3">Custo Total</th>
                   <th className="text-right p-3">% do Total</th>
                 </tr>
               </thead>
               <tbody>
                 {aggregated.map((item, index) => {
-                  const percentage = data!.total > 0 
-                    ? ((item.total_cost / data!.total) * 100).toFixed(1)
+                  const percentage = total > 0 
+                    ? ((item.total_cost / total) * 100).toFixed(1)
                     : '0.0';
                   
                   return (
@@ -138,8 +88,11 @@ export default function FinanceiroPage() {
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                          <span className="font-medium">{item.service}</span>
+                          <span className="font-medium capitalize">{item.service}</span>
                         </div>
+                      </td>
+                      <td className="p-3">
+                        <span className="text-sm capitalize text-slate-600">{item.category}</span>
                       </td>
                       <td className="p-3 text-right font-semibold">
                         R$ {item.total_cost.toFixed(2)}
@@ -153,8 +106,8 @@ export default function FinanceiroPage() {
               </tbody>
               <tfoot className="bg-slate-50 font-bold">
                 <tr>
-                  <td className="p-3">TOTAL</td>
-                  <td className="p-3 text-right">R$ {total}</td>
+                  <td className="p-3" colSpan={2}>TOTAL</td>
+                  <td className="p-3 text-right">R$ {total.toFixed(2)}</td>
                   <td className="p-3 text-right">100%</td>
                 </tr>
               </tfoot>
@@ -163,20 +116,20 @@ export default function FinanceiroPage() {
         )}
       </div>
 
-      {/* Gráfico de Barras Simples */}
+      {/* Gráfico de Distribuição */}
       {aggregated.length > 0 && (
         <div className="card p-6">
           <h2 className="text-lg font-semibold mb-4">Distribuição de Custos</h2>
           <div className="space-y-3">
             {aggregated.map((item, index) => {
-              const percentage = data!.total > 0 
-                ? (item.total_cost / data!.total) * 100
+              const percentage = total > 0 
+                ? (item.total_cost / total) * 100
                 : 0;
               
               return (
                 <div key={index}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium">{item.service}</span>
+                    <span className="font-medium capitalize">{item.service} <span className="text-slate-500">({item.category})</span></span>
                     <span className="text-slate-600">R$ {item.total_cost.toFixed(2)}</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-3">
@@ -188,6 +141,24 @@ export default function FinanceiroPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Custos por Categoria */}
+      {stats.finance.costs_by_category && Object.keys(stats.finance.costs_by_category).length > 0 && (
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold mb-4">Custos por Categoria</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {Object.entries(stats.finance.costs_by_category).map(([category, cost]) => (
+              <div key={category} className="p-4 bg-slate-50 rounded-lg">
+                <div className="text-sm text-slate-600 capitalize mb-1">{category}</div>
+                <div className="text-2xl font-bold">R$ {(cost as number).toFixed(2)}</div>
+                <div className="text-xs text-slate-500 mt-1">
+                  {total > 0 ? ((cost as number / total) * 100).toFixed(1) : '0'}% do total
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
