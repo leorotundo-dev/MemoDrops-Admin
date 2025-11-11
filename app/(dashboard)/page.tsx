@@ -4,7 +4,21 @@ import { UsersGrowthChart } from "@/components/charts/UsersGrowthChart";
 import { RevenueVsCostChart } from "@/components/charts/RevenueVsCostChart";
 
 export default async function DashboardHome() {
-  const stats = await sfetch("/admin/stats") as AdminStats;
+  const stats = await sfetch("/admin/stats") as AdminStats | null;
+  
+  // Se a API não retornar dados, mostrar valores padrão
+  if (!stats || !stats.users || !stats.finance) {
+    return (
+      <div className="space-y-6">
+        <div className="card p-6 text-center">
+          <h2 className="text-xl font-semibold mb-2">Dashboard Administrativo</h2>
+          <p className="text-slate-600">Aguardando conexão com a API do backend...</p>
+          <p className="text-sm text-slate-500 mt-2">Verifique se o backend está rodando e os endpoints /admin/stats estão implementados.</p>
+        </div>
+      </div>
+    );
+  }
+  
   const kpis = [
     { label: "Usuários", value: stats.users.total.toLocaleString() },
     { label: "DAU", value: stats.users.active_dau.toLocaleString() },
