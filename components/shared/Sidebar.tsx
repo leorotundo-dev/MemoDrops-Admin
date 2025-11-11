@@ -6,7 +6,7 @@ const NAV: NavItem[] = [
   { href: "/users", label: "Usuários" },
   { href: "/content/contests", label: "Concursos" },
   { href: "/content/subjects", label: "Matérias" },
-  { href: "/finance", label: "Financeiro" },
+  { href: "/financeiro", label: "Financeiro" },
   { href: "/monitoring", label: "Monitoramento" },
 ];
 
