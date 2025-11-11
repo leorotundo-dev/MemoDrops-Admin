@@ -1,6 +1,6 @@
 export async function api(path: string, opts: { token?: string; init?: RequestInit } = {}){
   const base = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
-  const headers: HeadersInit = { 'Content-Type': 'application/json', ...(opts.init?.headers || {}) };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(opts.init?.headers || {}) };
   if (opts.token) headers["Authorization"] = `Bearer ${opts.token}`;
   const res = await fetch(`${base}${path}`, { ...(opts.init || {}), headers, next: { revalidate: 0 } });
   if (!res.ok) throw new Error(`API error ${res.status}`);
