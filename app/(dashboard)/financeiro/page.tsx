@@ -1,4 +1,4 @@
-import { sfetch } from "@/lib/sfetch";
+import { sfetch } from "@/lib/serverApi";
 import { AdminStats } from "@/types";
 
 interface CostData {
