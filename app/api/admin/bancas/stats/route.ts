@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { API_CONFIG } from '@/lib/config';
 import { Pool } from 'pg';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
+// Usar API ao invés de conexão direta
+const API_URL = API_CONFIG.API_URL;
 
 export async function GET() {
   try {
