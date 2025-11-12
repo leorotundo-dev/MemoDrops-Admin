@@ -17,9 +17,18 @@ export async function GET(
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app';
+    const token = (session as any).token;
+    
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Token não encontrado' },
+        { status: 401 }
+      );
+    }
+
     const response = await fetch(`${apiUrl}/admin/bancas/${params.id}/contests`, {
       headers: {
-        'Authorization': `Bearer ${(session as any).accessToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
