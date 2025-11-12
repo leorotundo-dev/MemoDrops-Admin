@@ -30,16 +30,12 @@ export default function UsersPage() {
 
     try {
       setLoading(true);
-      const url = new URL(`${API_URL}/admin/users`);
+      const url = new URL('/api/admin/users', window.location.origin);
       if (q) url.searchParams.set('q', q);
       if (status !== 'all') url.searchParams.set('status', status);
       if (plan !== 'all') url.searchParams.set('plan', plan);
       
       const res = await fetch(url.toString(), {
-        headers: { 
-          'Authorization': `Bearer ${(session as any).token}`,
-          'Content-Type': 'application/json'
-        },
         cache: 'no-store'
       });
       
