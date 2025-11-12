@@ -15,8 +15,8 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
     (async ()=>{
       const [b, s, c] = await Promise.all([
         fetch(`${API}/admin/bancas/${bancaId}`, { headers:{ Authorization: `Bearer ${token}` }}).then(r=>r.json()),
-        fetch(`${API}/admin/bancas/${bancaId}/stats`, { headers:{ Authorization: `Bearer ${token}` }}).then(r=>r.json()),
-        fetch(`${API}/admin/bancas/${bancaId}/contests`, { headers:{ Authorization: `Bearer ${token}` }}).then(r=>r.json())
+        fetch(`${API}/bancas/${bancaId}/stats`).then(r=>r.json()),
+        fetch(`${API}/bancas/${bancaId}/contests`).then(r=>r.json()).then(data => data.contests || [])
       ]);
       setBanca(b); setStats(s||[]); setContests(c||[]);
     })();
