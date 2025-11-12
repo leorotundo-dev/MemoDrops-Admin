@@ -32,7 +32,7 @@ export default function ScrapersPage() {
       if (filters.search) params.set('search', filters.search);
       const res = await fetch(`/api/admin/scrapers?${params}`, { credentials: 'include' });
       const data = await res.json();
-      setScrapers(data);
+      setScrapers(Array.isArray(data) ? data : data.scrapers || data.items || []);
     } finally { setLoading(false); }
   }
   

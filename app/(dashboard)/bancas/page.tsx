@@ -35,7 +35,7 @@ export default function BancasPage(){
       if (!token) return;
       const res = await fetch(`/api/admin/bancas?${params}`, { credentials: 'include' });
       const data = await res.json();
-      setBancas(data);
+      setBancas(Array.isArray(data) ? data : data.bancas || data.items || []);
     } finally { setLoading(false); }
   }
   async function fetchStats(){
