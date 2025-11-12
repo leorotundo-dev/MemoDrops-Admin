@@ -98,7 +98,16 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
             <div className="text-slate-500 text-sm">Sem concursos listados ainda.</div>
           ) : (
             <ul className="list-disc pl-6 text-sm">
-              {contests.map((c, i)=>(<li key={i}>{c.title || 'Concurso'} — {c.date || ''}</li>))}
+              {contests.map((c, i)=>(
+                <li key={i} className="mb-1">
+                  <a href={c.dou_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {c.nome || 'Concurso sem nome'}
+                  </a>
+                  <span className="text-slate-400 text-xs ml-2">
+                    {c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : ''}
+                  </span>
+                </li>
+              ))}
             </ul>
           )}
         </div>
