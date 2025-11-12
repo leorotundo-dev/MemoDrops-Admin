@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { Pool } from 'pg';
 
 const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+
+// Conexão direta com banco (fallback se API não funcionar)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,33 +18,48 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const token = (session as any).token;
     const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const area = searchParams.get('area');
+    const status = searchParams.get('status');
+    const sort = searchParams.get('sort');
     
-    const url = new URL(`${API_URL}/admin/bancas`);
-    searchParams.forEach((value, key) => {
-      url.searchParams.set(key, value);
-    });
-
-    const response = await fetch(url.toString(), {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      return NextResponse.json(
-        { error: `API error: ${error}` },
-        { status: response.status }
-      );
+    // Consultar diretamente no banco
+    let query = 'SELECT * FROM bancas WHERE 1=1';
+    const params: any[] = [];
+    let paramCount = 1;
+    
+    if (search) {
+      query += ` AND (name ILIKE $${paramCount} OR full_name ILIKE $${paramCount})`;
+      params.push(`%${search}%`);
+      paramCount++;
+    }
+    
+    if (area && area !== 'all') {
+      query += ` AND area = $${paramCount}`;
+      params.push(area);
+      paramCount++;
+    }
+    
+    if (status === 'active') {
+      query += ` AND is_active = true`;
+    } else if (status === 'inactive') {
+      query += ` AND is_active = false`;
+    }
+    
+    // Ordenação
+    if (sort === 'name') {
+      query += ' ORDER BY name ASC';
+    } else if (sort === 'contests') {
+      query += ' ORDER BY total_contests DESC';
+    } else {
+      query += ' ORDER BY created_at DESC';
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const { rows } = await pool.query(query, params);
+    return NextResponse.json(rows);
   } catch (error: any) {
-    console.error('Proxy error:', error);
+    console.error('Database error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }
@@ -54,30 +75,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const token = (session as any).token;
     const body = await request.json();
+    const { name, full_name, acronym, area, description, website, is_active } = body;
 
-    const response = await fetch(`${API_URL}/admin/bancas`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
+    const { rows: [banca] } = await pool.query(`
+      INSERT INTO bancas (name, full_name, acronym, area, description, website, is_active, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      RETURNING *
+    `, [name, full_name, acronym, area, description, website, is_active !== false]);
 
-    if (!response.ok) {
-      const error = await response.text();
-      return NextResponse.json(
-        { error: `API error: ${error}` },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(banca, { status: 201 });
   } catch (error: any) {
-    console.error('Proxy error:', error);
+    console.error('Database error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }
