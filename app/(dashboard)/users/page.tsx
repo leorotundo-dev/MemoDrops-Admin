@@ -20,7 +20,10 @@ export default function UsersPage() {
   const [selected, setSelected] = useState<User | null>(null);
 
   async function load() {
+    console.log('Session in load:', session);
+    console.log('Token:', (session as any)?.token);
     if (!(session as any)?.token) {
+      console.log('No token found, skipping load');
       setLoading(false);
       return;
     }
