@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import type { Banca } from '../../../types/bancas';
 import { BancaModal } from '../../../components/bancas/BancaModal';
 import { BancaDetailsModal } from '../../../components/bancas/BancaDetailsModal';
@@ -10,6 +11,7 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 
 export default function BancasPage(){
   const { data: session } = useSession();
+  const router = useRouter();
   const token = (session as any)?.token;
   const [bancas, setBancas] = useState<Banca[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,7 +146,7 @@ export default function BancasPage(){
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={()=>setShowDetailsModal(b.id)} className="px-3 py-2 rounded-md border text-sm flex-1">Ver Detalhes</button>
+                  <button onClick={()=>router.push(`/bancas/${b.id}`)} className="px-3 py-2 rounded-md border text-sm flex-1">Ver Detalhes</button>
                   <button onClick={()=>setSelectedBanca(b)} className="px-3 py-2 rounded-md border text-sm">✏️</button>
                   <button onClick={()=>handleDelete(b.id)} className="px-3 py-2 rounded-md border text-sm text-red-700">🗑️</button>
                 </div>
