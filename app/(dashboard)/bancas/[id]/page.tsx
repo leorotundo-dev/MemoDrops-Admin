@@ -23,13 +23,11 @@ interface Banca {
 }
 
 interface Contest {
-  id: string;
-  title: string;
-  banca_name: string;
-  status: string;
-  published_at: string;
-  registration_start: string;
-  registration_end: string;
+  id: number;
+  nome: string;
+  dou_url: string;
+  banca_id: number;
+  created_at: string;
 }
 
 export default function BancaDetailsPage() {
@@ -56,10 +54,14 @@ export default function BancaDetailsPage() {
       const data = await res.json();
       setBanca(data);
       
-      // TODO: Buscar concursos quando o endpoint estiver disponível
-      // const contestsRes = await fetch(`/api/admin/concursos?banca_id=${params.id}`);
-      // const contestsData = await contestsRes.json();
-      // setContests(contestsData);
+      // Buscar concursos da banca
+      const contestsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app'}/admin/bancas/${params.id}/contests`, {
+        credentials: 'include'
+      });
+      if (contestsRes.ok) {
+        const contestsData = await contestsRes.json();
+        setContests(contestsData.contests || []);
+      }
       
     } catch (error) {
       console.error('Erro ao carregar banca:', error);
@@ -248,21 +250,23 @@ export default function BancaDetailsPage() {
                 className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{contest.title}</h3>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">{contest.nome}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      Status: <span className="font-medium">{contest.status}</span>
+                      Cadastrado em: {new Date(contest.created_at).toLocaleDateString('pt-BR')}
                     </p>
-                    {contest.registration_start && contest.registration_end && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        Inscrições: {new Date(contest.registration_start).toLocaleDateString('pt-BR')} até{' '}
-                        {new Date(contest.registration_end).toLocaleDateString('pt-BR')}
-                      </p>
-                    )}
                   </div>
-                  <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Ver Detalhes
-                  </button>
+                  {contest.dou_url && (
+                    <a
+                      href={contest.dou_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      Ver no DOU
+                    </a>
+                  )}
                 </div>
               </div>
             ))}
