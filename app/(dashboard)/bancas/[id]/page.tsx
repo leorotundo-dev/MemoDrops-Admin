@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { ArrowLeft, ExternalLink, Calendar, FileText, CheckCircle, XCircle } from 'lucide-react';
 
 interface Banca {
@@ -34,16 +33,15 @@ interface Contest {
 export default function BancaDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { data: session } = useSession();
   const [banca, setBanca] = useState<Banca | null>(null);
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (params.id && session) {
+    if (params.id) {
       fetchBancaDetails();
     }
-  }, [params.id, session]);
+  }, [params.id]);
 
   const fetchBancaDetails = async () => {
     try {
@@ -57,16 +55,12 @@ export default function BancaDetailsPage() {
       setBanca(data);
       
       // Buscar concursos da banca
-      if (session?.accessToken) {
-        const contestsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app'}/admin/bancas/${params.id}/contests`, {
-          headers: {
-            'Authorization': `Bearer ${session.accessToken}`
-          }
-        });
-        if (contestsRes.ok) {
-          const contestsData = await contestsRes.json();
-          setContests(contestsData.contests || []);
-        }
+      const contestsRes = await fetch(`/api/admin/bancas/${params.id}/contests`, {
+        credentials: 'include'
+      });
+      if (contestsRes.ok) {
+        const contestsData = await contestsRes.json();
+        setContests(contestsData.contests || []);
       }
       
     } catch (error) {
