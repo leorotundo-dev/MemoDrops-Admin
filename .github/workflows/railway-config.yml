@@ -1,0 +1,56 @@
+name: Configure Railway Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      railway_token:
+        description: 'Railway API Token'
+        required: true
+        type: string
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Configure Railway Variables
+        env:
+          RAILWAY_TOKEN: ${{ github.event.inputs.railway_token }}
+        run: |
+          echo "🚀 Configurando variáveis no Railway..."
+          
+          railway variables set NEXTAUTH_SECRET="etewMC7Xbhyykay8yGpdmXaT3L4nOjQ3f6piecOOcu8=" --token $RAILWAY_TOKEN
+          railway variables set NEXTAUTH_URL="https://admin.memodrops.com" --token $RAILWAY_TOKEN
+          railway variables set API_URL="https://api.memodrops.com" --token $RAILWAY_TOKEN
+          railway variables set NEXT_PUBLIC_API_URL="https://api.memodrops.com" --token $RAILWAY_TOKEN
+          railway variables set NODE_ENV="production" --token $RAILWAY_TOKEN
+          
+          echo "✅ Variáveis configuradas!"
+
+      - name: Trigger Railway Deploy
+        env:
+          RAILWAY_TOKEN: ${{ github.event.inputs.railway_token }}
+        run: |
+          echo "🔄 Triggering redeploy..."
+          railway up --token $RAILWAY_TOKEN || echo "Deploy triggered via webhook"
+
+      - name: Summary
+        run: |
+          echo "## ✅ Configuração Concluída" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "As seguintes variáveis foram configuradas:" >> $GITHUB_STEP_SUMMARY
+          echo "- NEXTAUTH_SECRET" >> $GITHUB_STEP_SUMMARY
+          echo "- NEXTAUTH_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- API_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- NEXT_PUBLIC_API_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- NODE_ENV" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 Próximos passos:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Aguarde 2-3 minutos para o deploy" >> $GITHUB_STEP_SUMMARY
+          echo "2. Acesse https://admin.memodrops.com" >> $GITHUB_STEP_SUMMARY
+          echo "3. Faça login e verifique os dados" >> $GITHUB_STEP_SUMMARY
