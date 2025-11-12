@@ -42,7 +42,7 @@ export default function UsersPage() {
       
       if (!res.ok) throw new Error('Erro ao carregar usuários');
       const data = await res.json();
-      setUsers(data.items || data || []);
+      setUsers(data.users || data.items || data || []);
     } catch (e: any) {
       toast.error(e.message || 'Erro ao carregar usuários');
     } finally {
@@ -51,13 +51,13 @@ export default function UsersPage() {
   }
 
   useEffect(() => { 
-    if (session?.user?.token) {
+    if ((session as any)?.token) {
       load(); 
     }
   }, [session]);
   
   useEffect(() => { 
-    if (session?.user?.token) {
+    if ((session as any)?.token) {
       const t = setTimeout(load, 350); 
       return () => clearTimeout(t);
     }
