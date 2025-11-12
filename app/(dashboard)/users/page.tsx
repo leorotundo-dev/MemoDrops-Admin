@@ -69,7 +69,25 @@ export default function UsersPage() {
   if (!session) {
     return (
       <div className="p-6">
-        <div className="text-center text-gray-500">Carregando...</div>
+        <div className="text-center text-gray-500">Carregando sessão...</div>
+      </div>
+    );
+  }
+
+  const token = (session as any)?.token;
+  
+  if (!token) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong>Erro de Autenticação:</strong> Token não encontrado na sessão.
+          <details className="mt-2">
+            <summary className="cursor-pointer">Ver detalhes da sessão</summary>
+            <pre className="mt-2 text-xs bg-white p-2 rounded overflow-auto">
+              {JSON.stringify(session, null, 2)}
+            </pre>
+          </details>
+        </div>
       </div>
     );
   }
@@ -106,7 +124,7 @@ export default function UsersPage() {
           user={selected} 
           onClose={() => setSelected(null)} 
           onChanged={load}
-          token={session.user.token}
+          token={token}
         />
       )}
       
