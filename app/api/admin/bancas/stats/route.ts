@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { API_CONFIG } from '@/lib/config';
-import { Pool } from 'pg';
 
-// Usar API ao invés de conexão direta
 const API_URL = API_CONFIG.API_URL;
 
 export async function GET() {
@@ -15,17 +13,26 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { rows: [stats] } = await pool.query(`
-      SELECT 
-        COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE is_active = true)::int AS active,
-        COALESCE(SUM(total_contests), 0)::int AS total_contests
-      FROM bancas
-    `);
+    const token = (session as any).token;
 
-    return NextResponse.json(stats || { total: 0, active: 0, total_contests: 0 });
+    // Fazer proxy para a API backend
+    const response = await fetch(`${API_URL}/admin/bancas/stats`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      return NextResponse.json({ error }, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Database error:', error);
+    console.error('Proxy error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }
