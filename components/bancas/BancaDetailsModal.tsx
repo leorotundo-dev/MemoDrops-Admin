@@ -9,6 +9,7 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
   const [banca, setBanca] = useState<Banca | null>(null);
   const [stats, setStats] = useState<BancaYearStat[]>([]);
   const [contests, setContests] = useState<any[]>([]);
+  const [refreshingLogo, setRefreshingLogo] = useState(false);
 
   useEffect(()=>{
     (async ()=>{
@@ -51,7 +52,34 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
           <div className="">
             <div className="p-3 border rounded-lg">
               <div className="text-sm text-slate-600 mb-2">Informações</div>
-              {banca.logo_url && <img src={banca.logo_url} alt={banca.display_name} className="h-16 mb-2" />}
+              <div className="mb-2">
+                <img src={`${API}/logos/bancas/${bancaId}`} alt={banca.display_name} className="h-16 mb-2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                <button 
+                  onClick={async () => {
+                    setRefreshingLogo(true);
+                    try {
+                      const res = await fetch(`${API}/logos/bancas/${bancaId}/refresh`, { 
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` }
+                      });
+                      if (res.ok) {
+                        alert('Logo atualizado com sucesso!');
+                        window.location.reload();
+                      } else {
+                        alert('Erro ao atualizar logo');
+                      }
+                    } catch (err) {
+                      alert('Erro ao atualizar logo');
+                    } finally {
+                      setRefreshingLogo(false);
+                    }
+                  }}
+                  disabled={refreshingLogo}
+                  className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+                >
+                  {refreshingLogo ? '🔄 Atualizando...' : '🔄 Atualizar Logo'}
+                </button>
+              </div>
               <div className="text-sm"><b>Nome:</b> {banca.display_name}</div>
               {banca.website_url && <div className="text-sm"><b>Site:</b> <a href={banca.website_url} className="text-blue-600 hover:underline" target="_blank">{banca.website_url}</a></div>}
               <div className="text-sm"><b>Áreas:</b> {banca.areas.join(', ') || '—'}</div>
