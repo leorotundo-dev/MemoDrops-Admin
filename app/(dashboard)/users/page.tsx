@@ -36,6 +36,7 @@ export default function UsersPage() {
       if (plan !== 'all') url.searchParams.set('plan', plan);
       
       const res = await fetch(url.toString(), {
+        credentials: 'include',
         cache: 'no-store'
       });
       

@@ -30,7 +30,7 @@ export default function ScrapersPage() {
       if (filters.category !== 'all') params.set('category', filters.category);
       if (filters.status !== 'all') params.set('status', filters.status);
       if (filters.search) params.set('search', filters.search);
-      const res = await fetch(`/api/admin/scrapers?${params}`);
+      const res = await fetch(`/api/admin/scrapers?${params}`, { credentials: 'include' });
       const data = await res.json();
       setScrapers(data);
     } finally { setLoading(false); }
@@ -38,7 +38,7 @@ export default function ScrapersPage() {
   
   async function fetchStats(){
     if (!token) return;
-    const res = await fetch(`/api/admin/scrapers/stats`);
+    const res = await fetch(`/api/admin/scrapers/stats`, { credentials: 'include' });
     setStats(await res.json());
   }
 

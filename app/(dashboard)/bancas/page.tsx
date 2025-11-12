@@ -33,21 +33,21 @@ export default function BancasPage(){
       if (filters.search) params.set('search', filters.search);
       if (filters.sort) params.set('sort', filters.sort);
       if (!token) return;
-      const res = await fetch(`/api/admin/bancas?${params}`);
+      const res = await fetch(`/api/admin/bancas?${params}`, { credentials: 'include' });
       const data = await res.json();
       setBancas(data);
     } finally { setLoading(false); }
   }
   async function fetchStats(){
     if (!token) return;
-    const res = await fetch(`/api/admin/bancas/stats`);
+    const res = await fetch(`/api/admin/bancas/stats`, { credentials: 'include' });
     setStats(await res.json());
   }
 
   async function handleDelete(id: string){
     if (!confirm('Tem certeza que deseja deletar esta banca?')) return;
     if (!token) return;
-    await fetch(`/api/admin/bancas/${id}`, { method: 'DELETE' });
+    await fetch(`/api/admin/bancas/${id}`, { method: 'DELETE', credentials: 'include' });
     fetchBancas(); fetchStats();
   }
 
