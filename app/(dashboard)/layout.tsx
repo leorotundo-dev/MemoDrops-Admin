@@ -2,19 +2,37 @@
 import { ReactNode } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/shared/Sidebar";
 import Header from "@/components/shared/Header";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  useEffect(() => {
+    // Se ficar mais de 5 segundos em loading, considera como erro
+    const timeout = setTimeout(() => {
+      if (status === "loading") {
+        setLoadingTimeout(true);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeout);
+  }, [status]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
   }, [status, router]);
+
+  // Se timeout ou erro, redireciona para login
+  if (loadingTimeout) {
+    router.push("/login");
+    return null;
+  }
 
   if (status === "loading") {
     return (
