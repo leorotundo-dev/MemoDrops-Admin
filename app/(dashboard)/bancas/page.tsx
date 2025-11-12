@@ -127,7 +127,9 @@ export default function BancasPage(){
             {bancas.map((b)=>(
               <div key={b.id} className="p-4 border rounded-lg bg-white hover:shadow transition-shadow">
                 <div className="h-24 flex items-center justify-center mb-3 bg-slate-50 rounded">
-                  {b.logo_url ? <img src={b.logo_url} alt={b.display_name} className="max-h-20 max-w-full" /> :
+                  {b.id ? <img src={`https://api-production-5ffc.up.railway.app/logos/bancas/${b.id}`} alt={b.display_name} className="max-h-20 max-w-full" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} /> : null}
+                  <div className="text-4xl font-bold text-slate-300 hidden">{(b.short_name || b.display_name).slice(0,3).toUpperCase()}</div>
+                  {!b.id && 
                     <div className="text-4xl font-bold text-slate-300">{(b.short_name || b.display_name).slice(0,3).toUpperCase()}</div>}
                 </div>
                 <h3 className="font-bold text-lg mb-1 text-center">{b.short_name || b.display_name}</h3>
@@ -171,7 +173,7 @@ export default function BancasPage(){
                   <tr key={b.id} className="border-t hover:bg-slate-50">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        {b.logo_url && <img src={b.logo_url} alt={b.display_name} className="h-8" />}
+                        <img src={`https://api-production-5ffc.up.railway.app/logos/bancas/${b.id}`} alt={b.display_name} className="h-8" onError={(e) => e.currentTarget.style.display = 'none'} />
                         <div>
                           <div className="font-medium">{b.display_name}</div>
                           {b.website_url && <a href={b.website_url} target="_blank" className="text-xs text-blue-600">{b.website_url}</a>}
