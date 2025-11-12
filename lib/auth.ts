@@ -4,7 +4,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "https://api.memodrops.com";
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
+  session: { 
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -39,5 +42,16 @@ export const authOptions: NextAuthOptions = {
       return session;
     }
   },
-  secret: process.env.NEXTAUTH_SECRET
+  secret: process.env.NEXTAUTH_SECRET,
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
+  }
 };
