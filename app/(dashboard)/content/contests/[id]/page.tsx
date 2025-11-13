@@ -166,9 +166,14 @@ export default function ContestDetailPage() {
         {contest.materias && contest.materias.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {contest.materias.map((materia) => (
-              <div key={materia.id} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+              <Link 
+                key={materia.id} 
+                href={`/content/contests/${params.id}/materias/${materia.id}`}
+                className="bg-slate-50 rounded-lg p-3 border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer block"
+              >
                 <p className="font-medium">{materia.nome}</p>
-              </div>
+                <p className="text-xs text-gray-500 mt-1">Ver tópicos →</p>
+              </Link>
             ))}
           </div>
         ) : (
