@@ -60,9 +60,8 @@ export default function BancaDetailsPage() {
       setBanca(data);
       
       // Buscar concursos da banca
-      const contestsRes = await fetch(`/api/admin/bancas/${params.id}/contests`, {
-        credentials: 'include'
-      });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app';
+      const contestsRes = await fetch(`${apiUrl}/bancas/${params.id}/contests`);
       if (contestsRes.ok) {
         const contestsData = await contestsRes.json();
         setContests(contestsData.contests || []);
