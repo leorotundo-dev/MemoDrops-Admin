@@ -11,7 +11,7 @@ type Contest = { id: string; name: string; banca?: string; ano?: number; nivel?:
 
 export default function ContestsPage(){
   const { data } = useSession();
-  const token = (data as any)?.accessToken as string | undefined;
+  const token = (data as any)?.token as string | undefined;
   const [items, setItems] = useState<Contest[]>([]);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Contest | null>(null);
@@ -30,7 +30,7 @@ export default function ContestsPage(){
     }catch(e){ console.error(e); }
   };
 
-  useEffect(()=>{ fetchList(); },[search, token]);
+  useEffect(()=>{ if(token) fetchList(); },[search, token]);
 
   const columns = useMemo<ColumnDef<Contest>[]>(() => [
     { accessorKey: "name", header: "Nome" },
