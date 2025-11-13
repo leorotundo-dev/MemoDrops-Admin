@@ -10,6 +10,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Se ficar mais de 5 segundos em loading, considera como erro
@@ -50,10 +51,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen grid md:grid-cols-[16rem_1fr]">
-      <Sidebar />
-      <div className="min-h-screen flex flex-col">
-        <Header title="Dashboard" />
+    <div className="min-h-screen flex">
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header title="Dashboard" onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
         <main className="container py-6 space-y-6">{children}</main>
       </div>
     </div>
