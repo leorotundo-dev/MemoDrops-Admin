@@ -261,17 +261,7 @@ export default function BancaDetailsPage() {
                       Cadastrado em: {new Date(contest.created_at).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
-                  {contest.dou_url && (
-                    <a
-                      href={contest.dou_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-1" />
-                      Ver no DOU
-                    </a>
-                  )}
+
                 </div>
               </div>
             ))}
