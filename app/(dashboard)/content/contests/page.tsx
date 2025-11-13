@@ -33,7 +33,15 @@ export default function ContestsPage(){
   useEffect(()=>{ if(token) fetchList(); },[search, token]);
 
   const columns = useMemo<ColumnDef<Contest>[]>(() => [
-    { accessorKey: "name", header: "Nome" },
+    { 
+      accessorKey: "name", 
+      header: "Nome",
+      cell: ({ row }) => (
+        <a href={`/content/contests/${row.original.id}`} className="text-blue-600 hover:underline font-medium">
+          {row.original.name}
+        </a>
+      )
+    },
     { accessorKey: "banca", header: "Banca" },
     { accessorKey: "ano", header: "Ano" },
     { accessorKey: "nivel", header: "Nível" },
