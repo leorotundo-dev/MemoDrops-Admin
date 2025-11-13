@@ -255,7 +255,9 @@ export default function BancaDetailsPage() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{contest.name}</h3>
+                    <Link href={`/content/contests/${contest.id}`}>
+                      <h3 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">{contest.name}</h3>
+                    </Link>
                     <p className="text-sm text-gray-600 mt-1">
                       Cadastrado em: {new Date(contest.created_at).toLocaleDateString('pt-BR')}
                     </p>
