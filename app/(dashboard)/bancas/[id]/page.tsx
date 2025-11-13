@@ -23,10 +23,15 @@ interface Banca {
 }
 
 interface Contest {
-  id: number;
-  nome: string;
-  dou_url: string;
-  banca_id: number;
+  id: string;
+  name: string;
+  slug: string;
+  banca: string | null;
+  ano: number | null;
+  nivel: string | null;
+  data_prova: string | null;
+  salario: string | null;
+  numero_vagas: number | null;
   created_at: string;
 }
 
@@ -251,7 +256,7 @@ export default function BancaDetailsPage() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{contest.nome}</h3>
+                    <h3 className="font-semibold text-gray-900">{contest.name}</h3>
                     <p className="text-sm text-gray-600 mt-1">
                       Cadastrado em: {new Date(contest.created_at).toLocaleDateString('pt-BR')}
                     </p>
