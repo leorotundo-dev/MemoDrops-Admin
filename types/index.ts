@@ -1,6 +1,6 @@
 export type AdminStats = {
   users: { total: number; new_last_30_days: number; active_dau: number; active_mau: number };
-  content: { contests: number; subjects: number; public_decks: number; public_cards: number };
+  content: { contests: number; subjects: number; topicos?: number; subtopicos?: number; drops?: number; public_decks: number; public_cards: number };
   finance: { 
     mrr: number; 
     total_cost: number; 

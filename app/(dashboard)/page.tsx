@@ -60,8 +60,9 @@ export default async function DashboardHome() {
           <ul className="text-sm space-y-1">
             <li>Concursos: <b>{stats.content.contests}</b></li>
             <li>Matérias: <b>{stats.content.subjects}</b></li>
-            <li>Decks públicos: <b>{stats.content.public_decks}</b></li>
-            <li>Cards públicos: <b>{stats.content.public_cards}</b></li>
+            <li>Tópicos: <b>{stats.content.topicos || 0}</b></li>
+            <li>Subtópicos: <b>{stats.content.subtopicos || 0}</b></li>
+            <li>Drops gerados: <b>{stats.content.drops || 0}</b></li>
           </ul>
         </div>
         <div className="card p-4">
