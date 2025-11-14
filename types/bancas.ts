@@ -1,7 +1,7 @@
 export type Banca = {
-  id: string;
+  id: string | number;
   name: string;
-  display_name: string;
+  display_name?: string | null;
   short_name?: string | null;
   website_url?: string | null;
   logo_url?: string | null;
