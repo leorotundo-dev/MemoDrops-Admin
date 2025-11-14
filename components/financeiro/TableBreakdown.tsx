@@ -14,7 +14,7 @@ export default function TableBreakdown({ data }:{ data: Array<{ key:string; brl:
           {data.map((d)=> (
             <tr key={d.key} className="border-b hover:bg-slate-50">
               <td className="p-2">{d.key}</td>
-              <td className="p-2 text-right">{d.brl.toFixed(2)}</td>
+              <td className="p-2 text-right">{Number(d.brl).toFixed(2)}</td>
               <td className="p-2 text-right">{d.events}</td>
             </tr>
           ))}

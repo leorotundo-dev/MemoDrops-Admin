@@ -35,6 +35,10 @@ export default function FinanceiroPage(){
         fetch(`${API}/admin/costs/breakdown?${qp({ env, from, to, group:'feature' })}`).then(r=>r.json()),
         fetch(`${API}/admin/costs/alerts`).then(r=>r.json()),
       ]);
+      // Converter strings para numbers
+      if (ov?.total_brl) ov.total_brl = Number(ov.total_brl);
+      if (ov?.series) ov.series = ov.series.map((s:any) => ({ ...s, brl: Number(s.brl) }));
+      if (br) br = br.map((b:any) => ({ ...b, brl: Number(b.brl), events: Number(b.events) }));
       setKpi(ov); setBreakdown(br); setAlerts(al);
     }finally{
       setLoading(false);
