@@ -30,7 +30,7 @@ export default function FinanceiroPage(){
     setLoading(true);
     try{
       const qp = (o:any)=> new URLSearchParams(o).toString();
-      const [ov, br, al] = await Promise.all([
+      let [ov, br, al] = await Promise.all([
         fetch(`${API}/admin/costs/overview?${qp({ env, from, to })}`).then(r=>r.json()),
         fetch(`${API}/admin/costs/breakdown?${qp({ env, from, to, group:'feature' })}`).then(r=>r.json()),
         fetch(`${API}/admin/costs/alerts`).then(r=>r.json()),
