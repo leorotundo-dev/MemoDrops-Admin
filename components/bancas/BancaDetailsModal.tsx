@@ -53,7 +53,7 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
             <div className="p-3 border rounded-lg">
               <div className="text-sm text-slate-600 mb-2">Informações</div>
               <div className="mb-2">
-                <img src={`${API}/logos/bancas/${bancaId}`} alt={banca.display_name} className="h-16 mb-2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                <img src={`${API}/logos/bancas/${bancaId}`} alt={banca.display_name || banca.name || ''} className="h-16 mb-2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                 <button 
                   onClick={async () => {
                     setRefreshingLogo(true);
@@ -80,7 +80,7 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
                   {refreshingLogo ? '🔄 Atualizando...' : '🔄 Atualizar Logo'}
                 </button>
               </div>
-              <div className="text-sm"><b>Nome:</b> {banca.display_name}</div>
+              <div className="text-sm"><b>Nome:</b> {banca.display_name || banca.name}</div>
               {banca.website_url && <div className="text-sm"><b>Site:</b> <a href={banca.website_url} className="text-blue-600 hover:underline" target="_blank">{banca.website_url}</a></div>}
               <div className="text-sm"><b>Áreas:</b> {banca.areas.join(', ') || '—'}</div>
               <div className="text-sm"><b>Status:</b> {banca.is_active ? 'Ativa' : 'Inativa'}</div>

@@ -148,9 +148,9 @@ export default function BancasPage(){
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={()=>router.push(`/bancas/${b.id}`)} className="px-3 py-2 rounded-md border text-sm flex-1">Ver Detalhes</button>
+                  <button onClick={()=>router.push(`/bancas/${String(b.id)}`)} className="px-3 py-2 rounded-md border text-sm flex-1">Ver Detalhes</button>
                   <button onClick={()=>setSelectedBanca(b)} className="px-3 py-2 rounded-md border text-sm">✏️</button>
-                  <button onClick={()=>handleDelete(b.id)} className="px-3 py-2 rounded-md border text-sm text-red-700">🗑️</button>
+                  <button onClick={()=>handleDelete(String(b.id))} className="px-3 py-2 rounded-md border text-sm text-red-700">🗑️</button>
                 </div>
               </div>
             ))}
@@ -193,9 +193,9 @@ export default function BancasPage(){
                     </td>
                     <td className="p-3">
                       <div className="flex gap-2 justify-center">
-                        <button onClick={()=>setShowDetailsModal(b.id)} className="px-3 py-2 rounded-md border text-sm">🔎</button>
+                        <button onClick={()=>setShowDetailsModal(String(b.id))} className="px-3 py-2 rounded-md border text-sm">🔎</button>
                         <button onClick={()=>setSelectedBanca(b)} className="px-3 py-2 rounded-md border text-sm">✏️</button>
-                        <button onClick={()=>handleDelete(b.id)} className="px-3 py-2 rounded-md border text-sm text-red-700">🗑️</button>
+                        <button onClick={()=>handleDelete(String(b.id))} className="px-3 py-2 rounded-md border text-sm text-red-700">🗑️</button>
                       </div>
                     </td>
                   </tr>
