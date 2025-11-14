@@ -26,7 +26,7 @@ export default function SubjectsPage(){
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       const json = await res.json();
-      setItems(json.data || []);
+      setItems(json.data || json.subjects || []);
     }catch(e){ console.error(e); }
   };
 
