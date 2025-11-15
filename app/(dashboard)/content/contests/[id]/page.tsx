@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { PdfUploader } from '@/components/content/PdfUploader';
+import { EditalUrlManager } from '@/components/content/EditalUrlManager';
 
 type Materia = {
   id: number;
@@ -289,7 +291,42 @@ export default function ContestDetailPage() {
         </div>
       </div>
 
-      {/* ========== 4. DOCUMENTOS E LINKS ========== */}
+      {/* ========== 4. GESTÃO DE EDITAL ========== */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          📤 Gestão de Edital
+        </h2>
+        
+        <div className="space-y-6">
+          {/* Upload de PDF */}
+          <div>
+            <h3 className="font-medium mb-3">Fazer Upload do PDF</h3>
+            <PdfUploader
+              contestId={contest.id}
+              onUploadSuccess={(url) => {
+                alert('Upload realizado com sucesso!');
+                window.location.reload();
+              }}
+              onUploadError={(error) => {
+                alert(`Erro no upload: ${error}`);
+              }}
+            />
+          </div>
+
+          <div className="border-t pt-6">
+            <h3 className="font-medium mb-3">Ou Cole a URL do Edital</h3>
+            <EditalUrlManager
+              contestId={contest.id}
+              currentUrl={contest.edital_url}
+              onUrlUpdated={(url) => {
+                window.location.reload();
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ========== 5. DOCUMENTOS E LINKS ========== */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
           🔗 Documentos e Links
