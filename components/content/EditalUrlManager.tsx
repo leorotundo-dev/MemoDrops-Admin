@@ -136,7 +136,7 @@ export function EditalUrlManager({ contestId, currentUrl, onUrlUpdated }: Edital
       <div className="flex gap-2">
         <button
           onClick={saveUrl}
-          disabled={saving || !url.trim() || (validationResult && !validationResult.valid)}
+          disabled={saving || !url.trim() || (validationResult ? !validationResult.valid : false)}
           className="btn btn-primary"
         >
           {saving ? '⏳ Salvando...' : '💾 Salvar URL'}
