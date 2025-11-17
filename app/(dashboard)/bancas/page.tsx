@@ -136,7 +136,7 @@ export default function BancasPage(){
                     alt={b.display_name || b.name}
                     className="max-h-20 max-w-full object-contain relative z-10"
                     onLoad={(e) => {
-                      const fallback = e.currentTarget.previousElementSibling;
+                      const fallback = e.currentTarget.previousElementSibling as HTMLElement;
                       if (fallback) fallback.style.display = 'none';
                     }}
                   />
