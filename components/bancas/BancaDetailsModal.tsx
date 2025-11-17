@@ -18,7 +18,7 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
         fetch(`${API}/admin/bancas/${bancaId}`, { headers:{ Authorization: `Bearer ${token}` }}).then(r=>r.json()),
         fetch(`${API}/bancas/${bancaId}/stats`).then(r=>r.json()),
         fetch(`${API}/bancas/${bancaId}/contests`).then(r=>r.json()).then(data => data.contests || []),
-        fetch('/logos.json').then(r=>r.json()).catch(()=>({}))
+        fetch('/banca-logos.json').then(r=>r.json()).catch(()=>({}))
       ]);
       setBanca(b); setStats(s||[]); setContests(c||[]); setLogos(l);
     })();
