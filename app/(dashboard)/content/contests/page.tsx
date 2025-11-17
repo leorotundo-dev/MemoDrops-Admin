@@ -69,7 +69,11 @@ export default function ContestsPage(){
       accessorKey: "name", 
       header: "Nome",
       cell: ({ row }) => (
-        <a href={`/content/contests/${row.original.id}`} className="text-blue-600 hover:underline font-medium">
+        <a 
+          href={`/content/contests/${row.original.id}`} 
+          className="text-blue-600 hover:underline font-medium block max-w-md truncate"
+          title={row.original.name}
+        >
           {row.original.name}
         </a>
       )
@@ -138,16 +142,16 @@ export default function ContestsPage(){
           <DataTable columns={columns} data={items} />
           
           {pagination && (
-            <div className="flex items-center justify-between px-2">
-              <div className="text-sm text-gray-600">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-2">
+              <div className="text-sm text-gray-600 text-center md:text-left">
                 Mostrando {items.length} de {pagination.total} concursos
                 {pagination.totalPages > 1 && ` (Página ${pagination.page} de ${pagination.totalPages})`}
               </div>
               
               {pagination.totalPages > 1 && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-center gap-2">
                   <button 
-                    className="btn btn-ghost btn-sm" 
+                    className="btn btn-ghost btn-sm hidden sm:inline-flex" 
                     onClick={() => goToPage(1)}
                     disabled={!pagination.hasPrev}
                   >
@@ -194,7 +198,7 @@ export default function ContestsPage(){
                     Próxima
                   </button>
                   <button 
-                    className="btn btn-ghost btn-sm" 
+                    className="btn btn-ghost btn-sm hidden sm:inline-flex" 
                     onClick={() => goToPage(pagination.totalPages)}
                     disabled={!pagination.hasNext}
                   >
