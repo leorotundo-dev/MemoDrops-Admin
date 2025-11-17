@@ -72,10 +72,8 @@ export default function BancasPage(){
       const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/update-counts', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({})
+        }
       });
       const data = await res.json();
       if (data.success) {
