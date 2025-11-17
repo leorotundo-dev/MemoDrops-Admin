@@ -196,7 +196,13 @@ export default function BancasPage(){
                   <tr key={b.id} className="border-t hover:bg-slate-50">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        <img src={`https://api-production-5ffc.up.railway.app/logos/bancas/${b.id}?t=${logoTimestamp}`} alt={b.display_name || b.name} className="h-8" onError={(e) => e.currentTarget.style.display = 'none'} />
+                        {logos[b.id] ? (
+                          <img src={logos[b.id]} alt={b.display_name || b.name} className="h-8" />
+                        ) : (
+                          <div className="h-8 w-8 flex items-center justify-center bg-slate-200 rounded text-xs font-bold">
+                            {(b.short_name || b.display_name || b.name).slice(0,2).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <div className="font-medium">{b.display_name}</div>
                           {b.website_url && <a href={b.website_url} target="_blank" className="text-xs text-blue-600">{b.website_url}</a>}
