@@ -10,15 +10,17 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
   const [stats, setStats] = useState<BancaYearStat[]>([]);
   const [contests, setContests] = useState<any[]>([]);
   const [refreshingLogo, setRefreshingLogo] = useState(false);
+  const [logos, setLogos] = useState<Record<number, string>>({});
 
   useEffect(()=>{
     (async ()=>{
-      const [b, s, c] = await Promise.all([
+      const [b, s, c, l] = await Promise.all([
         fetch(`${API}/admin/bancas/${bancaId}`, { headers:{ Authorization: `Bearer ${token}` }}).then(r=>r.json()),
         fetch(`${API}/bancas/${bancaId}/stats`).then(r=>r.json()),
-        fetch(`${API}/bancas/${bancaId}/contests`).then(r=>r.json()).then(data => data.contests || [])
+        fetch(`${API}/bancas/${bancaId}/contests`).then(r=>r.json()).then(data => data.contests || []),
+        fetch('/logos.json').then(r=>r.json()).catch(()=>({}))
       ]);
-      setBanca(b); setStats(s||[]); setContests(c||[]);
+      setBanca(b); setStats(s||[]); setContests(c||[]); setLogos(l);
     })();
   },[bancaId]);
 
@@ -29,7 +31,7 @@ export function BancaDetailsModal({ token, bancaId, onClose, onEdit }: { token: 
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-4xl">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
-            <img src={`${API}/logos/bancas/${bancaId}`} alt={banca.display_name || banca.name || ''} className="h-12" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            {logos[Number(bancaId)] && <img src={logos[Number(bancaId)]} alt={banca.display_name || banca.name || ''} className="h-12" />}
             <h2 className="text-xl font-semibold">{banca.short_name || banca.display_name}</h2>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-slate-900">✕</button>
