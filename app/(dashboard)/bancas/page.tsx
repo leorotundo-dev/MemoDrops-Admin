@@ -23,9 +23,24 @@ export default function BancasPage(){
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState<string | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [logoTimestamp] = useState(Date.now()); // Cache busting para logos
+  const [logos, setLogos] = useState<Record<string, string>>({});
 
-  useEffect(()=>{ fetchBancas(); fetchStats(); /* eslint-disable-next-line */ }, [filters]);
+  useEffect(()=>{ 
+    fetchBancas(); 
+    fetchStats(); 
+    fetchLogos();
+    /* eslint-disable-next-line */ 
+  }, [filters]);
+
+  async function fetchLogos() {
+    try {
+      const res = await fetch('/logos.json');
+      const data = await res.json();
+      setLogos(data);
+    } catch (err) {
+      console.error('Failed to load logos', err);
+    }
+  }
 
   async function fetchBancas(){
     try {
@@ -128,27 +143,17 @@ export default function BancasPage(){
             {bancas.map((b)=>(
               <div key={b.id} className="p-4 border rounded-lg bg-white hover:shadow transition-shadow">
                 <div className="h-24 flex items-center justify-center mb-3 bg-slate-50 rounded relative">
-                  <div className="text-4xl font-bold text-slate-300 absolute inset-0 flex items-center justify-center z-0">
-                    {(b.short_name || b.display_name || b.name).slice(0,3).toUpperCase()}
-                  </div>
-                  <img 
-                    src={`/logos.json?id=${b.id}`}
-                    alt={b.display_name || b.name}
-                    className="max-h-20 max-w-full object-contain relative z-10"
-                    onLoad={async (e) => {
-                      try {
-                        const res = await fetch('/logos.json');
-                        const logos = await res.json();
-                        if (logos[b.id]) {
-                          e.currentTarget.src = logos[b.id];
-                          const fallback = e.currentTarget.previousElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'none';
-                        }
-                      } catch (err) {
-                        console.error('Failed to load logo', err);
-                      }
-                    }}
-                  />
+                  {logos[b.id] ? (
+                    <img 
+                      src={logos[b.id]}
+                      alt={b.display_name || b.name}
+                      className="max-h-20 max-w-full object-contain"
+                    />
+                  ) : (
+                    <div className="text-4xl font-bold text-slate-300">
+                      {(b.short_name || b.display_name || b.name).slice(0,3).toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <h3 className="font-bold text-lg mb-1 text-center">{b.display_name || b.short_name || b.name}</h3>
                 <p className="text-sm text-slate-600 text-center mb-3 line-clamp-2">{b.description || b.display_name || b.name}</p>
