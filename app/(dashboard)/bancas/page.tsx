@@ -128,7 +128,15 @@ export default function BancasPage(){
             {bancas.map((b)=>(
               <div key={b.id} className="p-4 border rounded-lg bg-white hover:shadow transition-shadow">
                 <div className="h-24 flex items-center justify-center mb-3 bg-slate-50 rounded relative">
-                  <div className="text-4xl font-bold text-slate-300">
+                  <img 
+                    src={`https://api-production-5ffc.up.railway.app/logos/bancas/${b.id}?t=${Date.now()}`}
+                    alt={b.display_name || b.name}
+                    className="max-h-20 max-w-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <div className="text-4xl font-bold text-slate-300 absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'none' }}>
                     {(b.short_name || b.display_name || b.name).slice(0,3).toUpperCase()}
                   </div>
                 </div>
