@@ -98,7 +98,8 @@ export default function BancasPage(){
   }), []);
 
   return (
-    <div className="space-y-6 p      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Bancas de Concursos</h1>
         <div className="flex gap-2">
           <button onClick={handleUpdateCounts} className="px-4 py-2 rounded-md bg-purple-600 text-white">🔄 Atualizar Contadores</button>
