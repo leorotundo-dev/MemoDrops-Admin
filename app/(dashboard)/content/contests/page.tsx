@@ -39,7 +39,7 @@ export default function ContestsPage(){
       params.append('page', currentPage.toString());
       params.append('limit', '20');
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests?${params}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests/paginated?${params}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       const json = await res.json();
