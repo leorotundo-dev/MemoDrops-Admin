@@ -132,12 +132,21 @@ export default function BancasPage(){
                     {(b.short_name || b.display_name || b.name).slice(0,3).toUpperCase()}
                   </div>
                   <img 
-                    src={`https://api-production-5ffc.up.railway.app/logos/bancas/${b.id}?v=2`}
+                    src={`/logos.json?id=${b.id}`}
                     alt={b.display_name || b.name}
                     className="max-h-20 max-w-full object-contain relative z-10"
-                    onLoad={(e) => {
-                      const fallback = e.currentTarget.previousElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'none';
+                    onLoad={async (e) => {
+                      try {
+                        const res = await fetch('/logos.json');
+                        const logos = await res.json();
+                        if (logos[b.id]) {
+                          e.currentTarget.src = logos[b.id];
+                          const fallback = e.currentTarget.previousElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'none';
+                        }
+                      } catch (err) {
+                        console.error('Failed to load logo', err);
+                      }
                     }}
                   />
                 </div>
