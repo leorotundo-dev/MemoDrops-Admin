@@ -6,7 +6,6 @@ import type { Banca } from '../../../types/bancas';
 import { BancaModal } from '../../../components/bancas/BancaModal';
 import { BancaDetailsModal } from '../../../components/bancas/BancaDetailsModal';
 import { ImportModal } from '../../../components/bancas/ImportModal';
-import { BancaLogo } from '../../../components/bancas/BancaLogo';
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -128,13 +127,11 @@ export default function BancasPage(){
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {bancas.map((b)=>(
               <div key={b.id} className="p-4 border rounded-lg bg-white hover:shadow transition-shadow">
-                <BancaLogo 
-                  bancaId={b.id} 
-                  bancaName={b.name} 
-                  shortName={b.short_name} 
-                  displayName={b.display_name} 
-                  className="mb-3"
-                />
+                <div className="h-24 flex items-center justify-center mb-3 bg-slate-50 rounded relative">
+                  <div className="text-4xl font-bold text-slate-300">
+                    {(b.short_name || b.display_name || b.name).slice(0,3).toUpperCase()}
+                  </div>
+                </div>
                 <h3 className="font-bold text-lg mb-1 text-center">{b.display_name || b.short_name || b.name}</h3>
                 <p className="text-sm text-slate-600 text-center mb-3 line-clamp-2">{b.description || b.display_name || b.name}</p>
                 <div className="flex flex-wrap gap-1 justify-center mb-3">
