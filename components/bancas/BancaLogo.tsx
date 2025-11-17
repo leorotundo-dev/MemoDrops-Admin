@@ -3,10 +3,10 @@
 import { useState } from 'react';
 
 interface BancaLogoProps {
-  bancaId: number;
+  bancaId: string | number;
   bancaName: string;
-  shortName?: string;
-  displayName?: string;
+  shortName?: string | null;
+  displayName?: string | null;
   className?: string;
 }
 
@@ -14,7 +14,7 @@ export function BancaLogo({ bancaId, bancaName, shortName, displayName, classNam
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   
-  const initials = (shortName || displayName || bancaName).slice(0, 3).toUpperCase();
+  const initials = (shortName || displayName || bancaName || 'BAN').slice(0, 3).toUpperCase();
   const timestamp = Date.now();
   
   return (
