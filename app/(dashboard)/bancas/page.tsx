@@ -62,6 +62,28 @@ export default function BancasPage(){
     setStats(await res.json());
   }
 
+  async function handleUpdateCounts() {
+    if (!confirm('Atualizar contadores de concursos de todas as bancas?')) return;
+    try {
+      const res = await fetch('/api/admin/bancas/update-counts', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        fetchBancas();
+        fetchStats();
+      } else {
+        alert('Erro: ' + (data.error || 'Falha ao atualizar contadores'));
+      }
+    } catch (e: any) {
+      alert('Erro: ' + e.message);
+    }
+  }
+
   async function handleDelete(id: string){
     if (!confirm('Tem certeza que deseja deletar esta banca?')) return;
     if (!token) return;
@@ -76,12 +98,12 @@ export default function BancasPage(){
   }), []);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p      <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Bancas de Concursos</h1>
         <div className="flex gap-2">
-          <button onClick={()=>setShowImportModal(true)} className="px-3 py-2 rounded-md border text-sm">📥 Importar CSV</button>
-          <button onClick={()=>setShowCreateModal(true)} className="px-3 py-2 rounded-md bg-slate-800 text-white text-sm">➕ Nova Banca</button>
+          <button onClick={handleUpdateCounts} className="px-4 py-2 rounded-md bg-purple-600 text-white">🔄 Atualizar Contadores</button>
+          <button onClick={()=>setShowImportModal(true)} className="px-4 py-2 rounded-md bg-blue-600 text-white">📥 Importar CSV</button>
+          <button onClick={()=>setShowCreateModal(true)} className="px-4 py-2 rounded-md bg-green-600 text-white">➕ Nova Banca</button>
         </div>
       </div>
 
