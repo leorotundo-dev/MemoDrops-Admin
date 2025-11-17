@@ -128,17 +128,18 @@ export default function BancasPage(){
             {bancas.map((b)=>(
               <div key={b.id} className="p-4 border rounded-lg bg-white hover:shadow transition-shadow">
                 <div className="h-24 flex items-center justify-center mb-3 bg-slate-50 rounded relative">
-                  <img 
-                    src={`https://api-production-5ffc.up.railway.app/logos/bancas/${b.id}?t=${Date.now()}`}
-                    alt={b.display_name || b.name}
-                    className="max-h-20 max-w-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                  <div className="text-4xl font-bold text-slate-300 absolute inset-0 flex items-center justify-center" style={{ pointerEvents: 'none' }}>
+                  <div className="text-4xl font-bold text-slate-300 absolute inset-0 flex items-center justify-center z-0">
                     {(b.short_name || b.display_name || b.name).slice(0,3).toUpperCase()}
                   </div>
+                  <img 
+                    src={`https://api-production-5ffc.up.railway.app/logos/bancas/${b.id}?v=2`}
+                    alt={b.display_name || b.name}
+                    className="max-h-20 max-w-full object-contain relative z-10"
+                    onLoad={(e) => {
+                      const fallback = e.currentTarget.previousElementSibling;
+                      if (fallback) fallback.style.display = 'none';
+                    }}
+                  />
                 </div>
                 <h3 className="font-bold text-lg mb-1 text-center">{b.display_name || b.short_name || b.name}</h3>
                 <p className="text-sm text-slate-600 text-center mb-3 line-clamp-2">{b.description || b.display_name || b.name}</p>
