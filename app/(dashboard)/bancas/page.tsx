@@ -34,7 +34,7 @@ export default function BancasPage(){
 
   async function fetchLogos() {
     try {
-      const res = await fetch('/logos.json');
+      const res = await fetch('/banca-logos.json');
       const data = await res.json();
       setLogos(data);
     } catch (err) {
