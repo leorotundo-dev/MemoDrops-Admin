@@ -132,8 +132,15 @@ export default function BancasPage(){
                     src={`https://api-production-5ffc.up.railway.app/logos/bancas/${b.id}?v=${logoTimestamp}`} 
                     alt={b.display_name || b.name} 
                     className="max-h-20 max-w-full object-contain" 
-                    style={{ display: 'block' }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
                   />
+                  <div className="text-4xl font-bold text-slate-300 absolute inset-0 items-center justify-center" style={{ display: 'none' }}>
+                    {(b.short_name || b.display_name || b.name).slice(0,3).toUpperCase()}
+                  </div>
                 </div>
                 <h3 className="font-bold text-lg mb-1 text-center">{b.display_name || b.short_name || b.name}</h3>
                 <p className="text-sm text-slate-600 text-center mb-3 line-clamp-2">{b.description || b.display_name || b.name}</p>
