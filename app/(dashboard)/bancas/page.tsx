@@ -64,11 +64,17 @@ export default function BancasPage(){
 
   async function handleUpdateCounts() {
     if (!confirm('Atualizar contadores de concursos de todas as bancas?')) return;
+    if (!token) {
+      alert('Você precisa estar logado!');
+      return;
+    }
     try {
       const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/update-counts', {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({})
       });
       const data = await res.json();
