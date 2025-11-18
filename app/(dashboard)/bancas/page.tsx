@@ -340,9 +340,9 @@ export default function BancasPage(){
 
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={()=>setShowDetailsModal(b.id)} className="flex-1 px-3 py-2 text-sm border rounded hover:bg-slate-50">Ver Detalhes</button>
+                    <button onClick={()=>setShowDetailsModal(String(b.id))} className="flex-1 px-3 py-2 text-sm border rounded hover:bg-slate-50">Ver Detalhes</button>
                     <button onClick={()=>setSelectedBanca(b)} className="px-3 py-2 text-sm border rounded hover:bg-slate-50">✏️</button>
-                    <button onClick={()=>handleDelete(b.id)} className="px-3 py-2 text-sm border rounded hover:bg-red-50 text-red-600">🗑️</button>
+                    <button onClick={()=>handleDelete(String(b.id))} className="px-3 py-2 text-sm border rounded hover:bg-red-50 text-red-600">🗑️</button>
                   </div>
                 </div>
               ))}
@@ -386,9 +386,9 @@ export default function BancasPage(){
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex gap-1 justify-center">
-                          <button onClick={()=>setShowDetailsModal(b.id)} className="px-2 py-1 text-xs border rounded hover:bg-slate-50">Ver</button>
+                          <button onClick={()=>setShowDetailsModal(String(b.id))} className="px-2 py-1 text-xs border rounded hover:bg-slate-50">Ver</button>
                           <button onClick={()=>setSelectedBanca(b)} className="px-2 py-1 text-xs border rounded hover:bg-slate-50">Editar</button>
-                          <button onClick={()=>handleDelete(b.id)} className="px-2 py-1 text-xs border rounded hover:bg-red-50 text-red-600">Deletar</button>
+                          <button onClick={()=>handleDelete(String(b.id))} className="px-2 py-1 text-xs border rounded hover:bg-red-50 text-red-600">Deletar</button>
                         </div>
                       </td>
                     </tr>
