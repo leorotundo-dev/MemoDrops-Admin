@@ -280,7 +280,7 @@ export default function BancaDetailsPage() {
 
                 </div>
               </div>
-             )}
+            ))}
           </div>
           
           {/* Controles de Paginação */}
