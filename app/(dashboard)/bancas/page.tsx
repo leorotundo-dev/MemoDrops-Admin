@@ -18,6 +18,8 @@ export default function BancasPage(){
   const [stats, setStats] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const [filters, setFilters] = useState({ status: 'all', area: 'all', search: '', sort: 'name' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(12);
 
   const [selectedBanca, setSelectedBanca] = useState<Banca | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -29,6 +31,7 @@ export default function BancasPage(){
     fetchBancas(); 
     fetchStats(); 
     fetchLogos();
+    setCurrentPage(1); // Reset to first page when filters change
     /* eslint-disable-next-line */ 
   }, [filters]);
 
@@ -165,9 +168,18 @@ export default function BancasPage(){
       </div>
 
       {loading ? <div className="text-center py-12">Carregando...</div> : (
-        viewMode==='grid' ? (
+        <>
+        {(() => {
+          const indexOfLastItem = currentPage * itemsPerPage;
+          const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+          const currentBancas = bancas.slice(indexOfFirstItem, indexOfLastItem);
+          const totalPages = Math.ceil(bancas.length / itemsPerPage);
+          
+          return (
+            <>
+        {viewMode==='grid' ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {bancas.map((b)=>(
+            {currentBancas.map((b)=>(
               <div key={b.id} className="p-4 border rounded-lg bg-white hover:shadow transition-shadow">
                 <div className="h-24 flex items-center justify-center mb-3 bg-slate-50 rounded relative">
                   {logos[b.id] ? (
@@ -260,6 +272,44 @@ export default function BancasPage(){
             </table>
           </div>
         )
+        }
+        
+        {/* Controles de Paginação */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ← Anterior
+            </button>
+            <div className="flex gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 rounded-md border ${
+                    currentPage === page ? 'bg-slate-800 text-white' : 'hover:bg-slate-100'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            <button 
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Próximo →
+            </button>
+          </div>
+        )}
+        </>
+          );
+        })()}
+        </>
       )}
 
       {/* Modais */}
