@@ -323,7 +323,7 @@ export default function BancasPage(){
                     )}
                     <div className="flex-1">
                       <div className="font-bold text-lg">{b.display_name}</div>
-                      <div className="text-sm text-slate-500">{b.slug}</div>
+                      <div className="text-sm text-slate-500">{b.display_name?.toLowerCase().replace(/\s+/g, '-') || ''}</div>
                     </div>
                   </div>
                   <div className="flex gap-2 mb-3">
@@ -377,7 +377,7 @@ export default function BancasPage(){
                         )}
                       </td>
                       <td className="p-3 font-medium">{b.display_name}</td>
-                      <td className="p-3 text-sm text-slate-600">{b.slug}</td>
+                      <td className="p-3 text-sm text-slate-600">{b.display_name?.toLowerCase().replace(/\s+/g, '-') || ''}</td>
                       <td className="p-3">
                         {b.area && <span className={`text-xs px-2 py-1 rounded ${areaColors[b.area]}`}>{b.area}</span>}
                       </td>
