@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 
+const API = process.env.NEXT_PUBLIC_API_URL;
+
 interface ScraperStatus {
   banca: string;
   status: 'idle' | 'running' | 'completed' | 'error';
@@ -33,7 +35,7 @@ export default function MonitoramentoPage() {
     if (!token) return;
     
     try {
-      const res = await fetch('https://api-production-5ffc.up.railway.app/admin/scrapers/status', {
+      const res = await fetch(`${API}/admin/scrapers/status`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -57,7 +59,7 @@ export default function MonitoramentoPage() {
     if (!token) return;
 
     try {
-      const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/scrape-all', {
+      const res = await fetch(`${API}/admin/bancas/scrape-all`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
