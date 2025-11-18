@@ -327,7 +327,7 @@ export default function BancasPage(){
                     </div>
                   </div>
                   <div className="flex gap-2 mb-3">
-                    {b.area && <span className={`text-xs px-2 py-1 rounded ${areaColors[b.area]}`}>{b.area}</span>}
+                    {b.areas && b.areas.length > 0 && <span className={`text-xs px-2 py-1 rounded ${areaColors[b.areas[0]]}`}>{b.areas[0]}</span>}
                     <span className={`text-xs px-2 py-1 rounded ${b.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                       {b.is_active ? '✓ Ativa' : '✗ Inativa'}
                     </span>
@@ -379,7 +379,7 @@ export default function BancasPage(){
                       <td className="p-3 font-medium">{b.display_name}</td>
                       <td className="p-3 text-sm text-slate-600">{b.display_name?.toLowerCase().replace(/\s+/g, '-') || ''}</td>
                       <td className="p-3">
-                        {b.area && <span className={`text-xs px-2 py-1 rounded ${areaColors[b.area]}`}>{b.area}</span>}
+                        {b.areas && b.areas.length > 0 && <span className={`text-xs px-2 py-1 rounded ${areaColors[b.areas[0]]}`}>{b.areas[0]}</span>}
                       </td>
                       <td className="p-3 text-center font-bold">{b.total_contests}</td>
                       <td className="p-3 text-center">
