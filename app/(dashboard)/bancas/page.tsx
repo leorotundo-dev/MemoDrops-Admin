@@ -488,7 +488,7 @@ export default function BancasPage(){
                       <td className="p-3">
                         <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">{s.category}</span>
                       </td>
-                      <td className="p-3 text-sm text-gray-600 truncate max-w-xs">{s.url}</td>
+                      <td className="p-3 text-sm text-gray-600 truncate max-w-xs">{s.test_url || s.hostname_pattern}</td>
                       <td className="p-3 text-center">
                         <span className={`px-2 py-1 text-xs rounded ${s.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                           {s.is_active ? 'Ativo' : 'Inativo'}
