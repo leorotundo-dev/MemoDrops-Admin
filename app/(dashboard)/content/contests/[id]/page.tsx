@@ -104,6 +104,7 @@ export default function ContestDetailPage() {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({}),
         }
       );
       
