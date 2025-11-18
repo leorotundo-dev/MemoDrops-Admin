@@ -315,7 +315,7 @@ export default function BancasPage(){
                 <div key={b.id} className="border rounded-lg p-4 bg-white hover:shadow-lg transition">
                   <div className="flex items-center gap-3 mb-3">
                     {logos[b.display_name?.toLowerCase().replace(/\s+/g, '-') || ''] ? (
-                      <img src={logos[b.display_name?.toLowerCase().replace(/\s+/g, '-') || '']} alt={b.display_name} className="w-16 h-16 object-contain" />
+                      <img src={logos[b.display_name?.toLowerCase().replace(/\s+/g, '-') || '']} alt={b.display_name || ''} className="w-16 h-16 object-contain" />
                     ) : (
                       <div className="w-16 h-16 bg-slate-100 rounded flex items-center justify-center text-2xl font-bold text-slate-400">
                         {b.display_name?.charAt(0) || '?'}
@@ -369,7 +369,7 @@ export default function BancasPage(){
                     <tr key={b.id} className="border-b hover:bg-slate-50">
                       <td className="p-3">
                         {logos[b.display_name?.toLowerCase().replace(/\s+/g, '-') || ''] ? (
-                          <img src={logos[b.display_name?.toLowerCase().replace(/\s+/g, '-') || '']} alt={b.display_name} className="w-12 h-12 object-contain" />
+                          <img src={logos[b.display_name?.toLowerCase().replace(/\s+/g, '-') || '']} alt={b.display_name || ''} className="w-12 h-12 object-contain" />
                         ) : (
                           <div className="w-12 h-12 bg-slate-100 rounded flex items-center justify-center font-bold text-slate-400">
                             {b.display_name?.charAt(0) || '?'}
