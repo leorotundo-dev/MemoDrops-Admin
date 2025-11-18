@@ -495,7 +495,7 @@ export default function BancasPage(){
                         </span>
                       </td>
                       <td className="p-3 text-center text-sm text-gray-600">
-                        {s.last_run_at ? new Date(s.last_run_at).toLocaleString('pt-BR') : '-'}
+                        {s.last_tested_at ? new Date(s.last_tested_at).toLocaleString('pt-BR') : '-'}
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex gap-1 justify-center">
