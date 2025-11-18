@@ -66,6 +66,9 @@ export default function ContestDetailPage() {
   const [loading, setLoading] = useState(true);
   const [processingHierarchy, setProcessingHierarchy] = useState(false);
   const [generatingDrops, setGeneratingDrops] = useState(false);
+  const [updatingScraper, setUpdatingScraper] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+  const [logs, setLogs] = useState<any[]>([]);
 
   useEffect(() => {
     if (!token || !params.id) return;
@@ -157,6 +160,92 @@ export default function ContestDetailPage() {
     }
   };
 
+  const handleUpdateScraper = async () => {
+    if (!token || !contest?.id) return;
+    
+    const confirmUpdate = confirm('Deseja atualizar o scraper agora? Isso irá buscar novos dados da banca.');
+    if (!confirmUpdate) return;
+    
+    setUpdatingScraper(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests/${contest.id}/update-scraper`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (res.ok) {
+        alert('Scraper atualizado com sucesso!');
+        window.location.reload();
+      } else {
+        const error = await res.json();
+        alert(`Erro: ${error.message || 'Erro desconhecido'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao atualizar scraper');
+    } finally {
+      setUpdatingScraper(false);
+    }
+  };
+
+  const handleViewLogs = async () => {
+    if (!token || !contest?.id) return;
+    
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests/${contest.id}/scraper-logs`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (res.ok) {
+        const data = await res.json();
+        setLogs(data.logs || data.data || []);
+        setShowLogs(true);
+      } else {
+        alert('Nenhum log disponível');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao carregar logs');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!token || !contest?.id) return;
+    
+    const confirmDelete = confirm(`Tem certeza que deseja excluir o concurso "${contest.name}"? Esta ação não pode ser desfeita.`);
+    if (!confirmDelete) return;
+    
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests/${contest.id}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (res.ok) {
+        alert('Concurso excluído com sucesso!');
+        router.push('/content/contests');
+      } else {
+        const error = await res.json();
+        alert(`Erro: ${error.message || 'Erro desconhecido'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao excluir concurso');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -194,10 +283,16 @@ export default function ContestDetailPage() {
           ← Voltar para concursos
         </Link>
         <div className="flex gap-2">
-          <button className="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50">
+          <button 
+            onClick={() => router.push(`/content/contests/${contest.id}/edit`)}
+            className="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
+          >
             Editar
           </button>
-          <button className="px-4 py-2 text-sm border border-red-300 text-red-600 rounded hover:bg-red-50">
+          <button 
+            onClick={handleDelete}
+            className="px-4 py-2 text-sm border border-red-300 text-red-600 rounded hover:bg-red-50"
+          >
             Excluir
           </button>
         </div>
@@ -580,13 +675,46 @@ export default function ContestDetailPage() {
               </details>
             </div>
             <div className="flex gap-2 pt-2">
-              <button className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                🔄 Atualizar Agora
+              <button 
+                onClick={handleUpdateScraper}
+                disabled={updatingScraper}
+                className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {updatingScraper ? '⏳ Atualizando...' : '🔄 Atualizar Agora'}
               </button>
-              <button className="px-4 py-2 border border-gray-300 text-sm rounded hover:bg-gray-50">
+              <button 
+                onClick={handleViewLogs}
+                className="px-4 py-2 border border-gray-300 text-sm rounded hover:bg-gray-50"
+              >
                 📋 Ver Logs
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Logs */}
+      {showLogs && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowLogs(false)}>
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Logs do Scraper</h3>
+              <button 
+                onClick={() => setShowLogs(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <pre className="bg-gray-100 p-4 rounded text-xs overflow-x-auto">
+              {logs.length > 0 ? JSON.stringify(logs, null, 2) : 'Nenhum log disponível'}
+            </pre>
+            <button 
+              onClick={() => setShowLogs(false)}
+              className="mt-4 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+            >
+              Fechar
+            </button>
           </div>
         </div>
       )}
