@@ -91,6 +91,35 @@ export default function BancasPage(){
     }
   }
 
+  async function handleRunScrapers() {
+    if (!confirm('Rodar scrapers de todas as bancas? Isso pode demorar vários minutos.')) return;
+    if (!token) {
+      alert('Você precisa estar logado!');
+      return;
+    }
+    try {
+      alert('Scrapers iniciados! Isso pode demorar 5-10 minutos. Aguarde...');
+      const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/scrape-all', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if (data.success || data.total !== undefined) {
+        alert(`Scrapers concluídos!\n\nTotal encontrado: ${data.total}\nSalvos: ${data.saved}`);
+        fetchBancas();
+        fetchStats();
+      } else {
+        alert('Erro: ' + (data.error || data.message || 'Falha ao rodar scrapers'));
+      }
+    } catch (e: any) {
+      alert('Erro: ' + e.message);
+    }
+  }
+
   async function handleDelete(id: string){
     if (!confirm('Tem certeza que deseja deletar esta banca?')) return;
     if (!token) return;
@@ -109,6 +138,7 @@ export default function BancasPage(){
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Bancas de Concursos</h1>
         <div className="flex gap-2">
+          <button onClick={handleRunScrapers} className="px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700">🔍 Rodar Scrapers</button>
           <button onClick={handleUpdateCounts} className="px-4 py-2 rounded-md bg-purple-600 text-white">🔄 Atualizar Contadores</button>
           <button onClick={()=>setShowImportModal(true)} className="px-4 py-2 rounded-md bg-blue-600 text-white">📥 Importar CSV</button>
           <button onClick={()=>setShowCreateModal(true)} className="px-4 py-2 rounded-md bg-green-600 text-white">➕ Nova Banca</button>
