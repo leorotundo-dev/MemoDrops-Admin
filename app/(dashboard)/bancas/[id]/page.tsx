@@ -42,6 +42,8 @@ export default function BancaDetailsPage() {
   const [banca, setBanca] = useState<Banca | null>(null);
   const [contests, setContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
 
   useEffect(() => {
     if (params.id) {
@@ -248,8 +250,20 @@ export default function BancaDetailsPage() {
             </p>
           </div>
         ) : (
+          <>
+            {(() => {
+              const indexOfLastItem = currentPage * itemsPerPage;
+              const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+              const currentContests = contests.slice(indexOfFirstItem, indexOfLastItem);
+              const totalPages = Math.ceil(contests.length / itemsPerPage);
+              
+              return (
+                <>
+          <div className="mb-4 text-sm text-gray-600">
+            Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, contests.length)} de {contests.length} concursos
+          </div>
           <div className="space-y-4">
-            {contests.map((contest) => (
+            {currentContests.map((contest) => (
               <div
                 key={contest.id}
                 className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -266,8 +280,51 @@ export default function BancaDetailsPage() {
 
                 </div>
               </div>
-            ))}
+             )}
           </div>
+          
+          {/* Controles de Paginação */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <button 
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                ← Anterior
+              </button>
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
+                  // Mostrar apenas 10 páginas por vez
+                  const pageStart = Math.max(1, currentPage - 5);
+                  const pageNum = pageStart + i;
+                  if (pageNum > totalPages) return null;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 rounded-md border ${
+                        currentPage === pageNum ? 'bg-slate-800 text-white' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              <button 
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Próximo →
+              </button>
+            </div>
+          )}
+          </>
+              );
+            })()}
+          </>
         )}
       </div>
     </div>
