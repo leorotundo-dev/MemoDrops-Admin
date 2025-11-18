@@ -162,7 +162,10 @@ export default function ContestDetailPage() {
   };
 
   const handleUpdateScraper = async () => {
-    if (!token || !contest?.id) return;
+    if (!token || !contest?.informacoes_scraper?.source) {
+      alert('Informações do scraper não disponíveis');
+      return;
+    }
     
     const confirmUpdate = confirm('Deseja atualizar o scraper agora? Isso irá buscar novos dados da banca.');
     if (!confirmUpdate) return;
@@ -170,7 +173,7 @@ export default function ContestDetailPage() {
     setUpdatingScraper(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests/${contest.id}/update-scraper`,
+        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/bancas/${contest.informacoes_scraper.source}/scrape`,
         {
           method: 'POST',
           headers: {
@@ -196,11 +199,14 @@ export default function ContestDetailPage() {
   };
 
   const handleViewLogs = async () => {
-    if (!token || !contest?.id) return;
+    if (!token || !contest?.informacoes_scraper?.source) {
+      alert('Informações do scraper não disponíveis');
+      return;
+    }
     
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests/${contest.id}/scraper-logs`,
+        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/scrapers/${contest.informacoes_scraper.source}/logs`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -208,7 +214,7 @@ export default function ContestDetailPage() {
       
       if (res.ok) {
         const data = await res.json();
-        setLogs(data.logs || data.data || []);
+        setLogs(data.logs || data.data || data || []);
         setShowLogs(true);
       } else {
         alert('Nenhum log disponível');
