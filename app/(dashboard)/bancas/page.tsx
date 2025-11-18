@@ -96,6 +96,9 @@ export default function BancasPage(){
   }
 
   async function handleRunScrapers() {
+    // Debug: mostrar informações da sessão
+    alert(`DEBUG Session:\nSession: ${JSON.stringify(session)}\nToken: ${token}\nHas Token: ${!!token}`);
+    
     if (!confirm('Rodar scrapers de todas as bancas? Isso pode demorar vários minutos.')) return;
     if (!token) {
       alert('Você precisa estar logado!');
