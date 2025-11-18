@@ -8,6 +8,7 @@ const NAV: NavItem[] = [
   { href: "/users", label: "Usuários" },
   { href: "/content/contests", label: "Concursos" },
   { href: "/content/subjects", label: "Matérias" },
+  { href: "/content/drops", label: "Drops" },
   { href: "/financeiro", label: "Financeiro" },
   { href: "/scrapers", label: "Scrapers" },
   { href: "/bancas", label: "Bancas" },
