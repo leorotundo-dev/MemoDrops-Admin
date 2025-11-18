@@ -189,7 +189,7 @@ export default function BancasPage(){
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
-    if (filtersBancas.sort === 'name') arr.sort((a,b) => a.display_name.localeCompare(b.display_name));
+    if (filtersBancas.sort === 'name') arr.sort((a,b) => (a.display_name||'').localeCompare(b.display_name||''));
     if (filtersBancas.sort === 'contests') arr.sort((a,b) => (b.total_contests||0) - (a.total_contests||0));
     return arr;
   }, [filtered, filtersBancas.sort]);
