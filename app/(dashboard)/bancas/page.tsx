@@ -19,7 +19,7 @@ export default function BancasPage(){
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const [filters, setFilters] = useState({ status: 'all', area: 'all', search: '', sort: 'name' });
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12);
+  const [itemsPerPage] = useState(6);
 
   const [selectedBanca, setSelectedBanca] = useState<Banca | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
