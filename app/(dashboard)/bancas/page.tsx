@@ -7,37 +7,58 @@ import { BancaModal } from '../../../components/bancas/BancaModal';
 import { BancaDetailsModal } from '../../../components/bancas/BancaDetailsModal';
 import { ImportModal } from '../../../components/bancas/ImportModal';
 
+// Importar componentes de Scrapers
+import type { Scraper } from '@/types/scrapers';
+import { ScraperModal } from '@/components/scrapers/ScraperModal';
+import { TestModal } from '@/components/scrapers/TestModal';
+import { LogsModal } from '@/components/scrapers/LogsModal';
+
 const API = process.env.NEXT_PUBLIC_API_URL;
+
+type TabType = 'bancas' | 'scrapers';
 
 export default function BancasPage(){
   const { data: session } = useSession();
   const router = useRouter();
   const token = (session as any)?.token;
   
-  useEffect(() => {
-    console.log('🔐 Session Debug:', { session, token, hasToken: !!token });
-  }, [session, token]);
+  const [activeTab, setActiveTab] = useState<TabType>('bancas');
+  
+  // Estados para Bancas
   const [bancas, setBancas] = useState<Banca[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
+  const [loadingBancas, setLoadingBancas] = useState(true);
+  const [statsBancas, setStatsBancas] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
-  const [filters, setFilters] = useState({ status: 'all', area: 'all', search: '', sort: 'name' });
+  const [filtersBancas, setFiltersBancas] = useState({ status: 'all', area: 'all', search: '', sort: 'name' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(6);
-
   const [selectedBanca, setSelectedBanca] = useState<Banca | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState<string | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [logos, setLogos] = useState<Record<string, string>>({});
 
+  // Estados para Scrapers
+  const [scrapers, setScrapers] = useState<Scraper[]>([]);
+  const [loadingScrapers, setLoadingScrapers] = useState(true);
+  const [statsScrapers, setStatsScrapers] = useState<any>(null);
+  const [filtersScrapers, setFiltersScrapers] = useState({ category: 'all', status: 'all', search: '' });
+  const [selectedScraper, setSelectedScraper] = useState<Scraper | null>(null);
+  const [showCreateScraper, setShowCreateScraper] = useState(false);
+  const [showTest, setShowTest] = useState<string | null>(null);
+  const [showLogs, setShowLogs] = useState<string | null>(null);
+
   useEffect(()=>{ 
-    fetchBancas(); 
-    fetchStats(); 
-    fetchLogos();
-    setCurrentPage(1); // Reset to first page when filters change
-    /* eslint-disable-next-line */ 
-  }, [filters]);
+    if (activeTab === 'bancas') {
+      fetchBancas(); 
+      fetchStatsBancas(); 
+      fetchLogos();
+      setCurrentPage(1);
+    } else {
+      fetchScrapers();
+      fetchStatsScrapers();
+    }
+  }, [activeTab, filtersBancas, filtersScrapers, token]);
 
   async function fetchLogos() {
     try {
@@ -49,24 +70,26 @@ export default function BancasPage(){
     }
   }
 
+  // Funções para Bancas
   async function fetchBancas(){
     try {
-      setLoading(true);
+      setLoadingBancas(true);
       const params = new URLSearchParams();
-      if (filters.status !== 'all') params.set('status', filters.status);
-      if (filters.area !== 'all') params.set('area', filters.area);
-      if (filters.search) params.set('search', filters.search);
-      if (filters.sort) params.set('sort', filters.sort);
+      if (filtersBancas.status !== 'all') params.set('status', filtersBancas.status);
+      if (filtersBancas.area !== 'all') params.set('area', filtersBancas.area);
+      if (filtersBancas.search) params.set('search', filtersBancas.search);
+      if (filtersBancas.sort) params.set('sort', filtersBancas.sort);
       if (!token) return;
       const res = await fetch(`/api/admin/bancas?${params}`, { credentials: 'include' });
       const data = await res.json();
       setBancas(Array.isArray(data) ? data : data.bancas || data.items || []);
-    } finally { setLoading(false); }
+    } finally { setLoadingBancas(false); }
   }
-  async function fetchStats(){
+
+  async function fetchStatsBancas(){
     if (!token) return;
     const res = await fetch(`/api/admin/bancas/stats`, { credentials: 'include' });
-    setStats(await res.json());
+    setStatsBancas(await res.json());
   }
 
   async function handleUpdateCounts() {
@@ -78,61 +101,75 @@ export default function BancasPage(){
     try {
       const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/update-counts', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
-      if (data.success) {
-        alert(data.message);
+      if (res.ok) {
+        alert('Contadores atualizados!');
         fetchBancas();
-        fetchStats();
+        fetchStatsBancas();
       } else {
-        alert('Erro: ' + (data.error || 'Falha ao atualizar contadores'));
+        alert('Erro ao atualizar contadores');
       }
-    } catch (e: any) {
-      alert('Erro: ' + e.message);
+    } catch (err) {
+      alert('Erro: ' + (err instanceof Error ? err.message : String(err)));
     }
   }
 
   async function handleRunScrapers() {
-    // Debug: mostrar informações da sessão
-    alert(`DEBUG Session:\nSession: ${JSON.stringify(session)}\nToken: ${token}\nHas Token: ${!!token}`);
-    
-    if (!confirm('Rodar scrapers de todas as bancas? Isso pode demorar vários minutos.')) return;
-    if (!token) {
-      alert('Você precisa estar logado!');
-      return;
-    }
+    if (!confirm('Rodar todos os scrapers ativos?')) return;
+    if (!token) return;
     try {
-      alert('Scrapers iniciados! Isso pode demorar 5-10 minutos. Aguarde...');
-      const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/scrape-all', {
+      const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/run-scrapers', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
-      if (data.success || data.total !== undefined) {
-        alert(`Scrapers concluídos!\n\nTotal encontrado: ${data.total}\nSalvos: ${data.saved}`);
-        fetchBancas();
-        fetchStats();
+      if (res.ok) {
+        alert('Scrapers iniciados!');
       } else {
-        alert('Erro: ' + (data.error || data.message || 'Falha ao rodar scrapers'));
+        alert('Erro ao iniciar scrapers');
       }
-    } catch (e: any) {
-      alert('Erro: ' + e.message);
+    } catch (err) {
+      alert('Erro: ' + (err instanceof Error ? err.message : String(err)));
     }
   }
 
-  async function handleDelete(id: string){
+  async function handleDelete(id: string) {
     if (!confirm('Tem certeza que deseja deletar esta banca?')) return;
     if (!token) return;
     await fetch(`/api/admin/bancas/${id}`, { method: 'DELETE', credentials: 'include' });
-    fetchBancas(); fetchStats();
+    fetchBancas(); fetchStatsBancas();
   }
+
+  // Funções para Scrapers
+  async function fetchScrapers(){
+    if (!token) return;
+    try{
+      setLoadingScrapers(true);
+      const params = new URLSearchParams();
+      if (filtersScrapers.category !== 'all') params.set('category', filtersScrapers.category);
+      if (filtersScrapers.status !== 'all') params.set('status', filtersScrapers.status);
+      if (filtersScrapers.search) params.set('search', filtersScrapers.search);
+      const res = await fetch(`/api/admin/scrapers?${params}`, { credentials: 'include' });
+      const data = await res.json();
+      setScrapers(Array.isArray(data) ? data : data.scrapers || data.items || []);
+    } finally { setLoadingScrapers(false); }
+  }
+  
+  async function fetchStatsScrapers(){
+    if (!token) return;
+    const res = await fetch(`/api/admin/scrapers/stats`, { credentials: 'include' });
+    setStatsScrapers(await res.json());
+  }
+
+  const filteredScrapers = useMemo(() => {
+    return scrapers.filter(s => {
+      if (filtersScrapers.category !== 'all' && s.category !== filtersScrapers.category) return false;
+      if (filtersScrapers.status === 'active' && !s.is_active) return false;
+      if (filtersScrapers.status === 'inactive' && s.is_active) return false;
+      if (filtersScrapers.search && !s.name.toLowerCase().includes(filtersScrapers.search.toLowerCase())) return false;
+      return true;
+    });
+  }, [scrapers, filtersScrapers]);
 
   const areaColors: Record<string,string> = useMemo(()=> ({
     federal: 'bg-blue-100 text-blue-800',
@@ -140,228 +177,355 @@ export default function BancasPage(){
     municipal: 'bg-yellow-100 text-yellow-800',
   }), []);
 
+  const filtered = useMemo(() => {
+    return bancas.filter(b => {
+      if (filtersBancas.status === 'active' && !b.is_active) return false;
+      if (filtersBancas.status === 'inactive' && b.is_active) return false;
+      if (filtersBancas.area !== 'all' && b.area !== filtersBancas.area) return false;
+      if (filtersBancas.search && !b.display_name.toLowerCase().includes(filtersBancas.search.toLowerCase())) return false;
+      return true;
+    });
+  }, [bancas, filtersBancas]);
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    if (filtersBancas.sort === 'name') arr.sort((a,b) => a.display_name.localeCompare(b.display_name));
+    if (filtersBancas.sort === 'contests') arr.sort((a,b) => (b.total_contests||0) - (a.total_contests||0));
+    return arr;
+  }, [filtered, filtersBancas.sort]);
+
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sorted.slice(start, start + itemsPerPage);
+  }, [sorted, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(sorted.length / itemsPerPage);
+
+  if (!session) return <div className="p-8">Carregando...</div>;
+
   return (
     <div className="space-y-6 p-6">
+      {/* Header com Abas */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Bancas de Concursos</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Bancas & Scrapers</h1>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => setActiveTab('bancas')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'bancas'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              📊 Bancas Cadastradas
+            </button>
+            <button
+              onClick={() => setActiveTab('scrapers')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'scrapers'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🔍 Scrapers
+            </button>
+          </div>
+        </div>
+
+        {/* Botões de Ação */}
         <div className="flex gap-2">
-          <button onClick={handleRunScrapers} className="px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700">🔍 Rodar Scrapers</button>
-          <button onClick={handleUpdateCounts} className="px-4 py-2 rounded-md bg-purple-600 text-white">🔄 Atualizar Contadores</button>
-          <button onClick={()=>setShowImportModal(true)} className="px-4 py-2 rounded-md bg-blue-600 text-white">📥 Importar CSV</button>
-          <button onClick={()=>setShowCreateModal(true)} className="px-4 py-2 rounded-md bg-green-600 text-white">➕ Nova Banca</button>
+          {activeTab === 'bancas' ? (
+            <>
+              <button onClick={handleRunScrapers} className="px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700">🔍 Rodar Scrapers</button>
+              <button onClick={handleUpdateCounts} className="px-4 py-2 rounded-md bg-purple-600 text-white">🔄 Atualizar Contadores</button>
+              <button onClick={()=>setShowImportModal(true)} className="px-4 py-2 rounded-md bg-blue-600 text-white">📥 Importar CSV</button>
+              <button onClick={()=>setShowCreateModal(true)} className="px-4 py-2 rounded-md bg-green-600 text-white">➕ Nova Banca</button>
+            </>
+          ) : (
+            <button onClick={() => setShowCreateScraper(true)} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Novo Scraper
+            </button>
+          )}
         </div>
       </div>
 
-      {stats && (
-        <div className="grid sm:grid-cols-4 gap-4">
-          <div className="p-3 border rounded-lg bg-white"><div className="text-sm text-slate-600">Total de Bancas</div><div className="text-2xl font-bold">{stats.total}</div></div>
-          <div className="p-3 border rounded-lg bg-white"><div className="text-sm text-slate-600">Bancas Ativas</div><div className="text-2xl font-bold text-green-600">{stats.active}</div></div>
-          <div className="p-3 border rounded-lg bg-white"><div className="text-sm text-slate-600">Total de Concursos</div><div className="text-2xl font-bold">{stats.total_contests}</div></div>
-          <div className="p-3 border rounded-lg bg-white"><div className="text-sm text-slate-600">Banca Líder</div>
-            <div className="text-lg font-bold">{stats.top_banca ? stats.top_banca.display_name : '-'}</div>
-            {stats.top_banca && <div className="text-xs text-slate-500">{stats.top_banca.total_contests} concursos</div>}
-          </div>
-        </div>
-      )}
+      {/* Conteúdo das Abas */}
+      {activeTab === 'bancas' ? (
+        <>
+          {/* Stats Bancas */}
+          {statsBancas && (
+            <div className="grid sm:grid-cols-4 gap-4">
+              <div className="p-3 border rounded-lg bg-white"><div className="text-sm text-slate-600">Total de Bancas</div><div className="text-2xl font-bold">{statsBancas.total}</div></div>
+              <div className="p-3 border rounded-lg bg-white"><div className="text-sm text-slate-600">Bancas Ativas</div><div className="text-2xl font-bold text-green-600">{statsBancas.active}</div></div>
+              <div className="p-3 border rounded-lg bg-white"><div className="text-sm text-slate-600">Total de Concursos</div><div className="text-2xl font-bold">{statsBancas.total_contests}</div></div>
+              <div className="p-3 border rounded-lg bg-white"><div className="text-sm text-slate-600">Banca Líder</div>
+                <div className="text-lg font-bold">{statsBancas.top_banca ? statsBancas.top_banca.display_name : '-'}</div>
+                {statsBancas.top_banca && <div className="text-xs text-slate-500">{statsBancas.top_banca.total_contests} concursos</div>}
+              </div>
+            </div>
+          )}
 
-      <div className="p-4 border rounded-lg bg-white">
-        <div className="flex justify-between items-end">
-          <div className="grid md:grid-cols-4 gap-4 flex-1">
-            <div>
-              <label className="block text-sm font-medium mb-1">Buscar</label>
-              <input value={filters.search} onChange={(e)=>setFilters({ ...filters, search: e.target.value})} type="text" placeholder="Nome da banca..." className="w-full border rounded px-3 py-2" />
+          {/* Filtros Bancas */}
+          <div className="p-4 border rounded-lg bg-white">
+            <div className="flex justify-between items-end">
+              <div className="grid md:grid-cols-4 gap-4 flex-1">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Buscar</label>
+                  <input value={filtersBancas.search} onChange={(e)=>setFiltersBancas({ ...filtersBancas, search: e.target.value})} type="text" placeholder="Nome da banca..." className="w-full border rounded px-3 py-2" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Área</label>
+                  <select value={filtersBancas.area} onChange={(e)=>setFiltersBancas({ ...filtersBancas, area: e.target.value})} className="w-full border rounded px-3 py-2">
+                    <option value="all">Todas</option>
+                    <option value="federal">Federal</option>
+                    <option value="estadual">Estadual</option>
+                    <option value="municipal">Municipal</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select value={filtersBancas.status} onChange={(e)=>setFiltersBancas({ ...filtersBancas, status: e.target.value})} className="w-full border rounded px-3 py-2">
+                    <option value="all">Todos</option>
+                    <option value="active">Ativas</option>
+                    <option value="inactive">Inativas</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Ordenar por</label>
+                  <select value={filtersBancas.sort} onChange={(e)=>setFiltersBancas({ ...filtersBancas, sort: e.target.value})} className="w-full border rounded px-3 py-2">
+                    <option value="name">Nome (A-Z)</option>
+                    <option value="contests">Mais Concursos</option>
+                  </select>
+                </div>
+              </div>
+              <div className="ml-4 flex gap-2">
+                <button onClick={()=>setViewMode('grid')} className={`p-2 border rounded ${viewMode==='grid'?'bg-blue-100 border-blue-500':''}`}>📊 Grid</button>
+                <button onClick={()=>setViewMode('list')} className={`p-2 border rounded ${viewMode==='list'?'bg-blue-100 border-blue-500':''}`}>📋 Lista</button>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Área</label>
-              <select value={filters.area} onChange={(e)=>setFilters({ ...filters, area: e.target.value})} className="w-full border rounded px-3 py-2">
-                <option value="all">Todas</option>
-                <option value="federal">Federal</option>
-                <option value="estadual">Estadual</option>
-                <option value="municipal">Municipal</option>
+          </div>
+
+          {/* Lista de Bancas */}
+          {loadingBancas ? (
+            <div className="text-center py-8">Carregando bancas...</div>
+          ) : viewMode === 'grid' ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginated.map(b => (
+                <div key={b.id} className="border rounded-lg p-4 bg-white hover:shadow-lg transition">
+                  <div className="flex items-center gap-3 mb-3">
+                    {logos[b.slug] ? (
+                      <img src={logos[b.slug]} alt={b.display_name} className="w-16 h-16 object-contain" />
+                    ) : (
+                      <div className="w-16 h-16 bg-slate-100 rounded flex items-center justify-center text-2xl font-bold text-slate-400">
+                        {b.display_name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="font-bold text-lg">{b.display_name}</div>
+                      <div className="text-sm text-slate-500">{b.slug}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mb-3">
+                    {b.area && <span className={`text-xs px-2 py-1 rounded ${areaColors[b.area]}`}>{b.area}</span>}
+                    <span className={`text-xs px-2 py-1 rounded ${b.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {b.is_active ? '✓ Ativa' : '✗ Inativa'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                    <div>
+                      <div className="font-bold text-lg">{b.total_contests}</div>
+                      <div className="text-xs text-slate-600">Concursos</div>
+                    </div>
+                    <div>
+                      <div className="font-bold text-lg">{b.active_contests || 0}</div>
+                      <div className="text-xs text-slate-600">Ativos</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={()=>setShowDetailsModal(b.id)} className="flex-1 px-3 py-2 text-sm border rounded hover:bg-slate-50">Ver Detalhes</button>
+                    <button onClick={()=>setSelectedBanca(b)} className="px-3 py-2 text-sm border rounded hover:bg-slate-50">✏️</button>
+                    <button onClick={()=>handleDelete(b.id)} className="px-3 py-2 text-sm border rounded hover:bg-red-50 text-red-600">🗑️</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg border overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b">
+                  <tr>
+                    <th className="text-left p-3">Logo</th>
+                    <th className="text-left p-3">Nome</th>
+                    <th className="text-left p-3">Sigla</th>
+                    <th className="text-left p-3">Áreas</th>
+                    <th className="text-center p-3">Concursos</th>
+                    <th className="text-center p-3">Status</th>
+                    <th className="text-center p-3">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginated.map(b => (
+                    <tr key={b.id} className="border-b hover:bg-slate-50">
+                      <td className="p-3">
+                        {logos[b.slug] ? (
+                          <img src={logos[b.slug]} alt={b.display_name} className="w-12 h-12 object-contain" />
+                        ) : (
+                          <div className="w-12 h-12 bg-slate-100 rounded flex items-center justify-center font-bold text-slate-400">
+                            {b.display_name.charAt(0)}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 font-medium">{b.display_name}</td>
+                      <td className="p-3 text-sm text-slate-600">{b.slug}</td>
+                      <td className="p-3">
+                        {b.area && <span className={`text-xs px-2 py-1 rounded ${areaColors[b.area]}`}>{b.area}</span>}
+                      </td>
+                      <td className="p-3 text-center font-bold">{b.total_contests}</td>
+                      <td className="p-3 text-center">
+                        <span className={`text-xs px-2 py-1 rounded ${b.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {b.is_active ? 'Ativa' : 'Inativa'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex gap-1 justify-center">
+                          <button onClick={()=>setShowDetailsModal(b.id)} className="px-2 py-1 text-xs border rounded hover:bg-slate-50">Ver</button>
+                          <button onClick={()=>setSelectedBanca(b)} className="px-2 py-1 text-xs border rounded hover:bg-slate-50">Editar</button>
+                          <button onClick={()=>handleDelete(b.id)} className="px-2 py-1 text-xs border rounded hover:bg-red-50 text-red-600">Deletar</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-4">
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)} className="px-3 py-1 border rounded disabled:opacity-50">Anterior</button>
+              <span className="px-3 py-1">Página {currentPage} de {totalPages}</span>
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)} className="px-3 py-1 border rounded disabled:opacity-50">Próxima</button>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Stats Scrapers */}
+          {statsScrapers && (
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="bg-white p-4 rounded shadow">
+                <div className="text-sm text-gray-600">Total</div>
+                <div className="text-2xl font-bold">{statsScrapers.total || 0}</div>
+              </div>
+              <div className="bg-white p-4 rounded shadow">
+                <div className="text-sm text-gray-600">Ativos</div>
+                <div className="text-2xl font-bold text-green-600">{statsScrapers.active || 0}</div>
+              </div>
+              <div className="bg-white p-4 rounded shadow">
+                <div className="text-sm text-gray-600">Com Erro</div>
+                <div className="text-2xl font-bold text-red-600">{statsScrapers.with_errors || 0}</div>
+              </div>
+              <div className="bg-white p-4 rounded shadow">
+                <div className="text-sm text-gray-600">Taxa de Sucesso</div>
+                <div className="text-2xl font-bold">{statsScrapers.success_rate || 0}%</div>
+              </div>
+            </div>
+          )}
+
+          {/* Filtros Scrapers */}
+          <div className="bg-white p-4 rounded shadow mb-4">
+            <div className="grid grid-cols-3 gap-4">
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={filtersScrapers.search}
+                onChange={(e) => setFiltersScrapers({ ...filtersScrapers, search: e.target.value })}
+                className="px-3 py-2 border rounded"
+              />
+              <select
+                value={filtersScrapers.category}
+                onChange={(e) => setFiltersScrapers({ ...filtersScrapers, category: e.target.value })}
+                className="px-3 py-2 border rounded"
+              >
+                <option value="all">Todas Categorias</option>
+                <option value="banca">Banca</option>
+                <option value="portal">Portal</option>
+                <option value="custom">Custom</option>
               </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Status</label>
-              <select value={filters.status} onChange={(e)=>setFilters({ ...filters, status: e.target.value})} className="w-full border rounded px-3 py-2">
-                <option value="all">Todos</option>
+              <select
+                value={filtersScrapers.status}
+                onChange={(e) => setFiltersScrapers({ ...filtersScrapers, status: e.target.value })}
+                className="px-3 py-2 border rounded"
+              >
+                <option value="all">Todos Status</option>
                 <option value="active">Ativos</option>
                 <option value="inactive">Inativos</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Ordenar por</label>
-              <select value={filters.sort} onChange={(e)=>setFilters({ ...filters, sort: e.target.value})} className="w-full border rounded px-3 py-2">
-                <option value="name">Nome (A-Z)</option>
-                <option value="contests">Mais concursos</option>
-                <option value="recent">Mais recente</option>
-              </select>
-            </div>
           </div>
-          <div className="ml-4 flex gap-2">
-            <button onClick={()=>setViewMode('grid')} className={`px-3 py-2 rounded-md border text-sm ${viewMode==='grid'?'bg-slate-800 text-white':''}`}>🔲 Grid</button>
-            <button onClick={()=>setViewMode('list')} className={`px-3 py-2 rounded-md border text-sm ${viewMode==='list'?'bg-slate-800 text-white':''}`}>📋 Lista</button>
-          </div>
-        </div>
-      </div>
 
-      {loading ? <div className="text-center py-12">Carregando...</div> : (
-        <>
-        {(() => {
-          const indexOfLastItem = currentPage * itemsPerPage;
-          const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-          const currentBancas = bancas.slice(indexOfFirstItem, indexOfLastItem);
-          const totalPages = Math.ceil(bancas.length / itemsPerPage);
-          
-          return (
-            <>
-        {viewMode==='grid' ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {currentBancas.map((b)=>(
-              <div key={b.id} className="p-4 border rounded-lg bg-white hover:shadow transition-shadow">
-                <div className="h-24 flex items-center justify-center mb-3 bg-slate-50 rounded relative">
-                  {logos[b.id] ? (
-                    <img 
-                      src={logos[b.id]}
-                      alt={b.display_name || b.name}
-                      className="max-h-20 max-w-full object-contain"
-                    />
-                  ) : (
-                    <div className="text-4xl font-bold text-slate-300">
-                      {(b.short_name || b.display_name || b.name).slice(0,3).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <h3 className="font-bold text-lg mb-1 text-center">{b.display_name || b.short_name || b.name}</h3>
-                <p className="text-sm text-slate-600 text-center mb-3 line-clamp-2">{b.description || b.display_name || b.name}</p>
-                <div className="flex flex-wrap gap-1 justify-center mb-3">
-                  {b.areas.map((a)=>(<span key={a} className={`px-2 py-1 rounded text-xs ${areaColors[a]}`}>{a}</span>))}
-                </div>
-                <div className="grid grid-cols-2 gap-2 mb-3 text-center text-sm">
-                  <div>
-                    <div className="font-bold text-lg">{b.total_contests}</div>
-                    <div className="text-xs text-slate-600">Concursos</div>
-                  </div>
-                  <div>
-                    <div className="font-bold text-lg">{b.is_active ? <span className="text-green-600">✓</span> : <span className="text-gray-400">✗</span>}</div>
-                    <div className="text-xs text-slate-600">Status</div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={()=>router.push(`/bancas/${String(b.id)}`)} className="px-3 py-2 rounded-md border text-sm flex-1">Ver Detalhes</button>
-                  <button onClick={()=>setSelectedBanca(b)} className="px-3 py-2 rounded-md border text-sm">✏️</button>
-                  <button onClick={()=>handleDelete(String(b.id))} className="px-3 py-2 rounded-md border text-sm text-red-700">🗑️</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="border rounded-lg overflow-x-auto bg-white">
-            <table className="w-full">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="text-left p-3">Nome</th>
-                  <th className="text-left p-3">Sigla</th>
-                  <th className="text-left p-3">Áreas</th>
-                  <th className="text-center p-3">Concursos</th>
-                  <th className="text-center p-3">Status</th>
-                  <th className="text-center p-3">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bancas.map((b)=>(
-                  <tr key={b.id} className="border-t hover:bg-slate-50">
-                    <td className="p-3">
-                      <div className="flex items-center gap-3">
-                        {logos[b.id] ? (
-                          <img src={logos[b.id]} alt={b.display_name || b.name} className="h-8" />
-                        ) : (
-                          <div className="h-8 w-8 flex items-center justify-center bg-slate-200 rounded text-xs font-bold">
-                            {(b.short_name || b.display_name || b.name).slice(0,2).toUpperCase()}
-                          </div>
-                        )}
-                        <div>
-                          <div className="font-medium">{b.display_name}</div>
-                          {b.website_url && <a href={b.website_url} target="_blank" className="text-xs text-blue-600">{b.website_url}</a>}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3 font-semibold">{b.short_name || '-'}</td>
-                    <td className="p-3">
-                      <div className="flex flex-wrap gap-1">
-                        {b.areas.map((a)=>(<span key={a} className={`px-2 py-1 rounded text-xs ${areaColors[a]}`}>{a}</span>))}
-                      </div>
-                    </td>
-                    <td className="p-3 text-center font-semibold">{b.total_contests}</td>
-                    <td className="p-3 text-center">
-                      {b.is_active ? <span className="px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Ativo</span> :
-                                     <span className="px-2 py-1 rounded bg-gray-100 text-gray-800 text-xs">Inativo</span>}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex gap-2 justify-center">
-                        <button onClick={()=>setShowDetailsModal(String(b.id))} className="px-3 py-2 rounded-md border text-sm">🔎</button>
-                        <button onClick={()=>setSelectedBanca(b)} className="px-3 py-2 rounded-md border text-sm">✏️</button>
-                        <button onClick={()=>handleDelete(String(b.id))} className="px-3 py-2 rounded-md border text-sm text-red-700">🗑️</button>
-                      </div>
-                    </td>
+          {/* Lista de Scrapers */}
+          {loadingScrapers ? (
+            <div className="text-center py-8">Carregando scrapers...</div>
+          ) : filteredScrapers.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">Nenhum scraper encontrado</div>
+          ) : (
+            <div className="bg-white rounded shadow overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-3">Nome</th>
+                    <th className="text-left p-3">Categoria</th>
+                    <th className="text-left p-3">URL</th>
+                    <th className="text-center p-3">Status</th>
+                    <th className="text-center p-3">Última Exec.</th>
+                    <th className="text-center p-3">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-        }
-        
-        {/* Controles de Paginação */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-6">
-            <button 
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ← Anterior
-            </button>
-            <div className="flex gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-2 rounded-md border ${
-                    currentPage === page ? 'bg-slate-800 text-white' : 'hover:bg-slate-100'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+                </thead>
+                <tbody>
+                  {filteredScrapers.map(s => (
+                    <tr key={s.id} className="border-t hover:bg-gray-50">
+                      <td className="p-3 font-medium">{s.name}</td>
+                      <td className="p-3">
+                        <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">{s.category}</span>
+                      </td>
+                      <td className="p-3 text-sm text-gray-600 truncate max-w-xs">{s.url}</td>
+                      <td className="p-3 text-center">
+                        <span className={`px-2 py-1 text-xs rounded ${s.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {s.is_active ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center text-sm text-gray-600">
+                        {s.last_run_at ? new Date(s.last_run_at).toLocaleString('pt-BR') : '-'}
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex gap-1 justify-center">
+                          <button onClick={() => setShowTest(s.id)} className="px-2 py-1 text-xs border rounded hover:bg-gray-50">Testar</button>
+                          <button onClick={() => setShowLogs(s.id)} className="px-2 py-1 text-xs border rounded hover:bg-gray-50">Logs</button>
+                          <button onClick={() => setSelectedScraper(s)} className="px-2 py-1 text-xs border rounded hover:bg-gray-50">Editar</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <button 
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Próximo →
-            </button>
-          </div>
-        )}
-        </>
-          );
-        })()}
+          )}
         </>
       )}
 
       {/* Modais */}
-      {showCreateModal && (
-        <BancaModal token={token} onClose={()=>setShowCreateModal(false)} onSave={()=>{ setShowCreateModal(false); fetchBancas(); fetchStats(); }} />
-      )}
-      {selectedBanca && (
-        <BancaModal token={token} banca={selectedBanca} onClose={()=>setSelectedBanca(null)} onSave={()=>{ setSelectedBanca(null); fetchBancas(); fetchStats(); }} />
-      )}
-      {showDetailsModal && (
-        <BancaDetailsModal token={token} bancaId={showDetailsModal} onClose={()=>setShowDetailsModal(null)} onEdit={(b)=>{ setShowDetailsModal(null); setSelectedBanca(b as any); }} />
-      )}
-      {showImportModal && (
-        <ImportModal token={token} onClose={()=>setShowImportModal(false)} onImport={()=>{ setShowImportModal(false); fetchBancas(); fetchStats(); }} />
-      )}
+      {showCreateModal && <BancaModal onClose={()=>{ setShowCreateModal(false); fetchBancas(); fetchStatsBancas(); }} />}
+      {selectedBanca && <BancaModal banca={selectedBanca} onClose={()=>{ setSelectedBanca(null); fetchBancas(); fetchStatsBancas(); }} />}
+      {showDetailsModal && <BancaDetailsModal bancaId={showDetailsModal} onClose={()=>setShowDetailsModal(null)} />}
+      {showImportModal && <ImportModal onClose={()=>{ setShowImportModal(false); fetchBancas(); fetchStatsBancas(); }} />}
+      
+      {showCreateScraper && <ScraperModal onClose={()=>{ setShowCreateScraper(false); fetchScrapers(); }} />}
+      {selectedScraper && <ScraperModal scraper={selectedScraper} onClose={()=>{ setSelectedScraper(null); fetchScrapers(); }} />}
+      {showTest && <TestModal scraperId={showTest} onClose={()=>setShowTest(null)} />}
+      {showLogs && <LogsModal scraperId={showLogs} onClose={()=>setShowLogs(null)} />}
     </div>
   );
 }
