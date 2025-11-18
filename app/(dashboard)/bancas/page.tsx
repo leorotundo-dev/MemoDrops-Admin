@@ -13,6 +13,10 @@ export default function BancasPage(){
   const { data: session } = useSession();
   const router = useRouter();
   const token = (session as any)?.token;
+  
+  useEffect(() => {
+    console.log('🔐 Session Debug:', { session, token, hasToken: !!token });
+  }, [session, token]);
   const [bancas, setBancas] = useState<Banca[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
