@@ -4,6 +4,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { DropsTable } from "@/components/content/DropsTable";
 import { DropViewer } from "@/components/content/DropViewer";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
 export type DropListItem = {
   id: string;
   titulo: string;
@@ -64,7 +66,7 @@ export default function DropsPage() {
       if (statusFilter) params.set("aprovado", statusFilter);
       if (search) params.set("q", search);
 
-      const res = await fetch(`/admin/drops?${params.toString()}`, {
+      const res = await fetch(`${API_URL}/admin/drops?${params.toString()}`, {
         method: "GET",
         credentials: "include",
       });
@@ -89,7 +91,7 @@ export default function DropsPage() {
     aprovado: boolean
   ) => {
     try {
-      const res = await fetch(`/admin/drops/${dropId}`, {
+      const res = await fetch(`${API_URL}/admin/drops/${dropId}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -119,7 +121,7 @@ export default function DropsPage() {
     if (!confirmar) return;
 
     try {
-      const res = await fetch(`/admin/drops/${dropId}`, {
+      const res = await fetch(`${API_URL}/admin/drops/${dropId}`, {
         method: "DELETE",
         credentials: "include",
       });

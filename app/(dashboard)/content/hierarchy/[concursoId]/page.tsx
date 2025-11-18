@@ -5,6 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import { HierarchyTree } from "@/components/content/HierarchyTree";
 import { HierarchyNodeEditor } from "@/components/content/HierarchyNodeEditor";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
 type Subtopico = {
   id: string;
   nome: string;
@@ -55,7 +57,7 @@ export default function HierarchyPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/admin/concursos/${concursoId}/hierarchy`, {
+      const res = await fetch(`${API_URL}/admin/concursos/${concursoId}/hierarchy`, {
         method: "GET",
         credentials: "include",
       });
@@ -91,11 +93,11 @@ export default function HierarchyPage() {
     try {
       let endpoint = "";
       if (editTarget.tipo === "materia") {
-        endpoint = `/admin/materias/${editTarget.id}`;
+        endpoint = `${API_URL}/admin/materias/${editTarget.id}`;
       } else if (editTarget.tipo === "topico") {
-        endpoint = `/admin/topicos/${editTarget.id}`;
+        endpoint = `${API_URL}/admin/topicos/${editTarget.id}`;
       } else {
-        endpoint = `/admin/subtopicos/${editTarget.id}`;
+        endpoint = `${API_URL}/admin/subtopicos/${editTarget.id}`;
       }
 
       const res = await fetch(endpoint, {
@@ -122,7 +124,7 @@ export default function HierarchyPage() {
     }
 
     try {
-      const res = await fetch(`/admin/subtopicos/${subtopicoId}`, {
+      const res = await fetch(`${API_URL}/admin/subtopicos/${subtopicoId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -144,7 +146,7 @@ export default function HierarchyPage() {
 
     try {
       setLoadingDrops(true);
-      const res = await fetch(`/admin/concursos/${concursoId}/gerar-drops-lote`, {
+      const res = await fetch(`${API_URL}/admin/concursos/${concursoId}/gerar-drops-lote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
