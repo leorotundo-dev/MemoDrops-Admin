@@ -182,7 +182,7 @@ export default function BancasPage(){
       if (filtersBancas.status === 'active' && !b.is_active) return false;
       if (filtersBancas.status === 'inactive' && b.is_active) return false;
       if (filtersBancas.area !== 'all' && !b.areas?.includes(filtersBancas.area)) return false;
-      if (filtersBancas.search && !b.display_name.toLowerCase().includes(filtersBancas.search.toLowerCase())) return false;
+      if (filtersBancas.search && !b.display_name?.toLowerCase().includes(filtersBancas.search.toLowerCase())) return false;
       return true;
     });
   }, [bancas, filtersBancas]);
