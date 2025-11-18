@@ -337,10 +337,7 @@ export default function BancasPage(){
                       <div className="font-bold text-lg">{b.total_contests}</div>
                       <div className="text-xs text-slate-600">Concursos</div>
                     </div>
-                    <div>
-                      <div className="font-bold text-lg">{b.active_contests || 0}</div>
-                      <div className="text-xs text-slate-600">Ativos</div>
-                    </div>
+
                   </div>
                   <div className="flex gap-2">
                     <button onClick={()=>setShowDetailsModal(b.id)} className="flex-1 px-3 py-2 text-sm border rounded hover:bg-slate-50">Ver Detalhes</button>
