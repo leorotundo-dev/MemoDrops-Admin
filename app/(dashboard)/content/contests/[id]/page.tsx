@@ -97,14 +97,14 @@ export default function ContestDetailPage() {
     setProcessingHierarchy(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests/${params.id}/processar-hierarquia`,
+        `${process.env.NEXT_PUBLIC_API_URL || process.env.API_URL}/admin/contests/${params.id}/process-hierarquia`,
         {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify({ editalUrl: contest.edital_url }),
         }
       );
       
