@@ -516,13 +516,13 @@ export default function BancasPage(){
       {/* Modais */}
       {showCreateModal && <BancaModal onClose={()=>{ setShowCreateModal(false); fetchBancas(); fetchStatsBancas(); }} />}
       {selectedBanca && <BancaModal banca={selectedBanca} onClose={()=>{ setSelectedBanca(null); fetchBancas(); fetchStatsBancas(); }} />}
-      {showDetailsModal && <BancaDetailsModal bancaId={showDetailsModal} onClose={()=>setShowDetailsModal(null)} />}
-      {showImportModal && <ImportModal onClose={()=>{ setShowImportModal(false); fetchBancas(); fetchStatsBancas(); }} />}
+      {showDetailsModal && <BancaDetailsModal token="" bancaId={showDetailsModal} onClose={()=>setShowDetailsModal(null)} onEdit={()=>{}} />}
+      {showImportModal && <ImportModal token="" onClose={()=>{ setShowImportModal(false); fetchBancas(); fetchStatsBancas(); }} onImport={()=>{}} />}
       
-      {showCreateScraper && <ScraperModal onClose={()=>{ setShowCreateScraper(false); fetchScrapers(); }} />}
-      {selectedScraper && <ScraperModal scraper={selectedScraper} onClose={()=>{ setSelectedScraper(null); fetchScrapers(); }} />}
-      {showTest && <TestModal scraperId={showTest} onClose={()=>setShowTest(null)} />}
-      {showLogs && <LogsModal scraperId={showLogs} onClose={()=>setShowLogs(null)} />}
+      {showCreateScraper && <ScraperModal token="" onClose={()=>{ setShowCreateScraper(false); fetchScrapers(); }} />}
+      {selectedScraper && <ScraperModal token="" scraper={selectedScraper} onClose={()=>{ setSelectedScraper(null); fetchScrapers(); }} />}
+      {showTest && <TestModal token="" scraperId={showTest} onClose={()=>setShowTest(null)} />}
+      {showLogs && <LogsModal token="" scraperId={showLogs} onClose={()=>setShowLogs(null)} />}
     </div>
   );
 }

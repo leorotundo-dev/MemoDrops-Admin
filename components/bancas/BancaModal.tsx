@@ -40,7 +40,7 @@ export function BancaModal({ banca, onClose }: {
         website_url: banca.website_url || '',
         logo_url: banca.logo_url || '',
         description: banca.description || '',
-        area: banca.area || 'federal',
+        area: (banca.areas && banca.areas[0]) || 'federal',
         is_active: banca.is_active,
         scraper_config: null
       });
