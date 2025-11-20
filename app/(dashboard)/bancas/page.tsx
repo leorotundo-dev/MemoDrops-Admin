@@ -121,7 +121,8 @@ export default function BancasPage(){
     try {
       const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/run-scrapers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({})
       });
       if (res.ok) {
         alert('Scrapers iniciados!');
