@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { HierarchyTree } from "@/components/content/HierarchyTree";
 import { HierarchyNodeEditor } from "@/components/content/HierarchyNodeEditor";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app';
 
 type Subtopico = {
   id: string;

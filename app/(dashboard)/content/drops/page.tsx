@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { DropsTable } from "@/components/content/DropsTable";
 import { DropViewer } from "@/components/content/DropViewer";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app';
 
 export type DropListItem = {
   id: string;

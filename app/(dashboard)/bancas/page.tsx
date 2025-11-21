@@ -99,7 +99,8 @@ export default function BancasPage(){
       return;
     }
     try {
-      const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/update-counts', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app';
+      const res = await fetch(`${apiUrl}/admin/bancas/update-counts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
       });
@@ -119,7 +120,8 @@ export default function BancasPage(){
     if (!confirm('Rodar todos os scrapers ativos? Isso pode demorar alguns minutos.')) return;
     try {
       // Usar rota pública que não requer autenticação
-      const res = await fetch('https://api-production-5ffc.up.railway.app/public/run-scrapers', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app';
+      const res = await fetch(`${apiUrl}/public/run-scrapers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
