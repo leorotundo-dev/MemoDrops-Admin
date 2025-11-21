@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executar Scrapers - MemoDrops</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #e55a2b;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Executar Scrapers</h1>
+        <p>Clique no botão abaixo para executar todos os scrapers ativos.</p>
+        
+        <button id="runBtn" onclick="runScrapers()">
+            Executar Scrapers
+        </button>
+        
+        <button onclick="checkStatus()">
+            Verificar Status
+        </button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function runScrapers() {
+            const btn = document.getElementById('runBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.textContent = 'Executando...';
+            status.style.display = 'block';
+            status.className = 'info';
+            status.innerHTML = '⏳ Iniciando scrapers...';
+            
+            try {
+                // Tentar pegar token do NextAuth
+                const cookies = document.cookie.split(';');
+                let token = null;
+                
+                // Procurar por token em cookies
+                for (const cookie of cookies) {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name.includes('token') || name.includes('auth')) {
+                        token = value;
+                        break;
+                    }
+                }
+                
+                // Se não encontrou em cookies, pedir ao usuário
+                if (!token) {
+                    token = prompt('Cole seu token JWT aqui:\n\n(Você pode obter o token fazendo login no admin e abrindo o console do navegador)');
+                    if (!token) {
+                        throw new Error('Token não fornecido');
+                    }
+                }
+                
+                const response = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/run-scrapers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    status.className = 'success';
+                    status.innerHTML = `
+                        <h3>✅ Sucesso!</h3>
+                        <p>${data.message || 'Scrapers executados com sucesso!'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    status.className = 'error';
+                    status.innerHTML = `
+                        <h3>❌ Erro ${response.status}</h3>
+                        <p>${data.message || data.error || 'Erro ao executar scrapers'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                status.className = 'error';
+                status.innerHTML = `
+                    <h3>❌ Erro</h3>
+                    <p>${error.message}</p>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Executar Scrapers';
+            }
+        }
+        
+        async function checkStatus() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            status.className = 'info';
+            status.innerHTML = '⏳ Verificando status...';
+            
+            try {
+                const response = await fetch('https://api-production-5ffc.up.railway.app/admin/database/analyze-invalid-urls');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    status.className = 'success';
+                    status.innerHTML = `
+                        <h3>📊 Status Atual</h3>
+                        <p><strong>Total de concursos:</strong> ${data.statistics.total_concursos}</p>
+                        <p><strong>Com edital_url:</strong> ${data.statistics.com_edital_url}</p>
+                        <p><strong>Sem edital_url:</strong> ${data.statistics.sem_edital_url}</p>
+                        <p><strong>URLs inválidos:</strong> ${data.invalid_urls.total_invalidos}</p>
+                    `;
+                } else {
+                    status.className = 'error';
+                    status.innerHTML = `<h3>❌ Erro ao verificar status</h3>`;
+                }
+            } catch (error) {
+                status.className = 'error';
+                status.innerHTML = `<h3>❌ Erro: ${error.message}</h3>`;
+            }
+        }
+    </script>
+</body>
+</html>
