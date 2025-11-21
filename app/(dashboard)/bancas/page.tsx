@@ -116,18 +116,20 @@ export default function BancasPage(){
   }
 
   async function handleRunScrapers() {
-    if (!confirm('Rodar todos os scrapers ativos?')) return;
-    if (!token) return;
+    if (!confirm('Rodar todos os scrapers ativos? Isso pode demorar alguns minutos.')) return;
     try {
-      const res = await fetch('https://api-production-5ffc.up.railway.app/admin/bancas/run-scrapers', {
+      // Usar rota pública que não requer autenticação
+      const res = await fetch('https://api-production-5ffc.up.railway.app/public/run-scrapers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({})
+        headers: { 'Content-Type': 'application/json' }
       });
-      if (res.ok) {
-        alert('Scrapers iniciados!');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`Scrapers concluídos!\n\n${data.message}\nConcursos encontrados: ${data.total_concursos_encontrados}`);
+        fetchBancas();
+        fetchStatsBancas();
       } else {
-        alert('Erro ao iniciar scrapers');
+        alert('Erro ao iniciar scrapers: ' + (data.error || 'Erro desconhecido'));
       }
     } catch (err) {
       alert('Erro: ' + (err instanceof Error ? err.message : String(err)));
