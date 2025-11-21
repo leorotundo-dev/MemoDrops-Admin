@@ -123,7 +123,8 @@ export default function BancasPage(){
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-production-5ffc.up.railway.app';
       const res = await fetch(`${apiUrl}/public/run-scrapers`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
       });
       const data = await res.json();
       if (res.ok && data.success) {
